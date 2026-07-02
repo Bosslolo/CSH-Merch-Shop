@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./styles/csh-fonts.css";
+@import "./styles/csh-premium.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   CSH MERCH SHOP — Design System
+   Philosophy: Gemeinschaft (Community)
+   Movement: Contemporary Editorial Fashion
+   Signature Color: CSH Navy #0F1F3D
+   Typography: Central Gothic (all text)
+   ============================================================ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* CSH Brand Colors */
+  --color-csh-navy: oklch(0.18 0.06 255);
+  --color-csh-navy-deep: oklch(0.12 0.05 255);
+  --color-csh-gold: oklch(0.72 0.12 75);
+  --color-csh-offwhite: oklch(0.97 0.008 75);
+  --color-csh-charcoal: oklch(0.15 0.005 0);
+  --color-csh-warm-gray: oklch(0.55 0.008 75);
+
+  --font-sans: var(--font-csh);
+  --font-serif: var(--font-csh);
+  --font-mono: var(--font-csh);
+}
+
+:root {
+  --radius: 0.25rem;
+  --csh-sky: #e4ecf4;
+  --csh-sky-deep: #c5d3e4;
+  --csh-panel: rgba(252, 252, 250, 0.94);
+  --csh-panel-solid: #fafaf8;
+  --csh-navy: #0f1f3d;
+  --csh-gold: #c9a84c;
+  --csh-warm: #f5f2ed;
+  --csh-border: rgba(15, 31, 61, 0.1);
+  --balmoral-sky: var(--csh-sky);
+  --balmoral-sky-deep: var(--csh-sky-deep);
+  --balmoral-panel: var(--csh-panel-solid);
+  --balmoral-navy: var(--csh-navy);
+  --balmoral-border: var(--csh-border);
+  --background: var(--csh-sky);
+  --foreground: oklch(0.15 0.005 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.005 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.005 0);
+  --primary: oklch(0.18 0.06 255);
+  --primary-foreground: oklch(0.97 0.008 75);
+  --secondary: oklch(0.93 0.008 75);
+  --secondary-foreground: oklch(0.18 0.06 255);
+  --muted: oklch(0.93 0.005 75);
+  --muted-foreground: oklch(0.55 0.008 75);
+  --accent: oklch(0.72 0.12 75);
+  --accent-foreground: oklch(0.12 0.05 255);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.88 0.008 75);
+  --input: oklch(0.88 0.008 75);
+  --ring: oklch(0.18 0.06 255);
+  --chart-1: oklch(0.18 0.06 255);
+  --chart-2: oklch(0.72 0.12 75);
+  --chart-3: oklch(0.55 0.008 75);
+  --chart-4: oklch(0.35 0.04 255);
+  --chart-5: oklch(0.93 0.008 75);
+  --sidebar: oklch(0.15 0.005 0);
+  --sidebar-foreground: oklch(0.97 0.008 75);
+  --sidebar-primary: oklch(0.72 0.12 75);
+  --sidebar-primary-foreground: oklch(0.12 0.05 255);
+  --sidebar-accent: oklch(0.25 0.04 255);
+  --sidebar-accent-foreground: oklch(0.97 0.008 75);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.72 0.12 75);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-csh);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-csh);
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+      max-width: 1440px;
+    }
+  }
+
+  /* CSH Typography */
+  .font-display {
+    font-family: var(--font-csh);
+  }
+  .font-body {
+    font-family: var(--font-csh);
+  }
+  .font-mono-label {
+    font-family: var(--font-csh);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  /* Film grain overlay */
+  .grain-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Underline grow animation */
+  .link-underline {
+    position: relative;
+    text-decoration: none;
+  }
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .link-underline:hover::after {
+    width: 100%;
+  }
+
+  /* CSH Circle watermark */
+  .csh-watermark {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  /* Vertical label */
+  .vertical-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-family: var(--font-csh);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.65rem;
+  }
+}
+
+/* Scroll-triggered animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slowZoom {
+  from { transform: scale(1.05); }
+  to { transform: scale(1); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 1.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-slow-zoom {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

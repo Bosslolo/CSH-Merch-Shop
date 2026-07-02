@@ -1,0 +1,26 @@
+/* Central Gothic — drop files into client/public/fonts/ */
+@font-face {
+  font-family: 'Central Gothic';
+  src:
+    url('/fonts/central-gothic.woff2') format('woff2'),
+    url('/fonts/central-gothic.woff') format('woff'),
+    url('/fonts/central-gothic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Central Gothic';
+  src:
+    url('/fonts/central-gothic-italic.woff2') format('woff2'),
+    url('/fonts/central-gothic-italic.woff') format('woff'),
+    url('/fonts/central-gothic-italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --font-csh: 'Central Gothic', 'Century Gothic', 'CenturyGothic', 'AppleGothic', 'Futura', 'Trebuchet MS', sans-serif;
+}

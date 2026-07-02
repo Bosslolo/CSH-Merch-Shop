@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "description": "CSH Merch — curated catalog from Fotoshooting Schülerfirma + csh-merch-images",
+  "folders": {
+    "Shooting 1": "Early studio — hoodie backs, building print, detail shots (38 files)",
+    "Shooting 2": "Main product shoot — all hoodies & tees, studio + variants (123 files)",
+    "Shooting 3": "Outdoor lifestyle — cross-generation, campus, pairs (32 files)",
+    "Blanked": "Reference drafts, logos, WhatsApp exports — not for shop (11 files)"
+  },
+  "assets": {
+    "hero/lifestyle-crossgen-hoodies-outdoor.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 3/34931596-78D8-4EC5-81C7-94074588E2E9.JPG",
+      "subject": "Cross-generation lifestyle — black hoodie back + white hoodie front, outdoor campus",
+      "use": "Full-page backdrop hero (Balmoral center model)"
+    },
+    "hero/lifestyle-hero-navy-hoodie-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC02623.jpg",
+      "subject": "Navy hoodie front, CSH crest logo, studio black backdrop",
+      "use": "Center hero alternate, Hoodie Blau primary"
+    },
+    "hero/school-building-gemeindezentrum.jpg": {
+      "source": "Fotoshooting Schülerfirma/Blanked/CSH-Front.jpeg",
+      "subject": "CSH Gemeindezentrum building exterior with CSH round logo",
+      "use": "Editorial / story sections"
+    },
+    "panel/collection-inset-hoodie-lifestyle.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC03468.jpg",
+      "subject": "Black hoodie lifestyle — warm, approachable (left panel inset)",
+      "use": "Balmoral left panel mini-hero"
+    },
+    "products/hoodie-blau-front-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC02623.jpg",
+      "subject": "CSH Hoodie Blau — front studio",
+      "product": "csh-hoodie-blau"
+    },
+    "products/hoodie-blau-detail-drawstrings.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC02634.jpg",
+      "subject": "Navy hoodie detail",
+      "product": "csh-hoodie-blau",
+      "note": "Gallery alt if file exists"
+    },
+    "products/hoodie-schwarz-back-building-print.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 1/DSC02195.jpg",
+      "subject": "Black hoodie back — school building line art + Christliche Schule im Hegau",
+      "product": "csh-hoodie-schwarz"
+    },
+    "products/hoodie-schwarz-front-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 1/DSC02110.jpg",
+      "subject": "Black hoodie front — studio, full framing",
+      "product": "csh-hoodie-schwarz"
+    },
+    "products/hoodie-schwarz-front-lifestyle.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC03468.jpg",
+      "subject": "Black hoodie lifestyle — warm portrait",
+      "product": "csh-hoodie-schwarz",
+      "use": "Gallery alt"
+    },
+    "products/hoodie-blau-detail-logo.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC02613.jpg",
+      "subject": "Navy hoodie CSH crest logo close-up",
+      "product": "csh-hoodie-blau"
+    },
+    "products/hoodie-weiss-front-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC02639.jpg",
+      "subject": "White hoodie front — CSH crest, studio",
+      "product": "csh-hoodie-weiss"
+    },
+    "products/tshirt-schwarz-front-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 1/DSC02252.jpg",
+      "subject": "Black tee front — CSH circle logo, studio",
+      "product": "csh-t-shirt-schwarz"
+    },
+    "products/tshirt-schwarz-group-community.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC03419.jpg",
+      "subject": "Three models in black tees — cross-generation group shot",
+      "product": "csh-t-shirt-schwarz"
+    },
+    "products/tshirt-weiss-front-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC03208.jpg",
+      "subject": "White tee front — CSH logo, studio",
+      "product": "csh-t-shirt-weiss"
+    },
+    "community/group-tees-black-studio.jpg": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/DSC03419.jpg",
+      "subject": "Community group portrait — black shirts",
+      "use": "Community / unity sections"
+    },
+    "brand/logo-white-on-transparent.png": {
+      "source": "Fotoshooting Schülerfirma/Shooting 2/CSH_white.png",
+      "subject": "CSH wordmark asset",
+      "use": "UI overlays"
+    }
+  }
+}

@@ -1,0 +1,1857 @@
+{
+  "version": 2,
+  "generated": "visual-analysis",
+  "total_files": 204,
+  "naming_convention": "{product}-{farbe}-{ansicht}-{kontext}[-variant].ext | lifestyle-* | ref-* | brand-* | combo-*",
+  "folders": {
+    "Shooting 1": "Early studio — black hoodie & black tee only (38)",
+    "Shooting 2": "Main shoot — all 3 hoodie colors + 2 tee colors, studio/snow/campus (123)",
+    "Shooting 3": "Outdoor lifestyle — campus, cross-generation (32)",
+    "Blanked": "Reference, mockups, brand assets (11)"
+  },
+  "shop_products": {
+    "hoodie-blau": "Navy hoodie — CSH crest logo front",
+    "hoodie-schwarz": "Black hoodie — logo front, building print back",
+    "hoodie-weiss": "White hoodie — black logo front, building print back",
+    "tshirt-schwarz": "Black t-shirt — CSH circle logo front",
+    "tshirt-weiss": "White t-shirt — CSH logo front, building print back"
+  },
+  "files": [
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02070.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-female-01.jpg",
+      "description": "Female model, black hoodie front CSH logo, studio",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02071.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-female-02.jpg",
+      "description": "Female model, black hoodie front, looking away, studio",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02104.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-front-back-studio-01.jpg",
+      "description": "Hoodie front + t-shirt back with building print, studio",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02110.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-01.jpg",
+      "description": "Smiling male, black hoodie front CSH logo, studio",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02152.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-studio-hood-up-01.jpg",
+      "description": "Black hoodie back, building print, hood up",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02195.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-studio-01.jpg",
+      "description": "Black hoodie back, school building line art, studio",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02198.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-01.jpg",
+      "description": "Female model, black t-shirt front CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02204.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-02.jpg",
+      "description": "Female pulling t-shirt hem, CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02210.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-03.jpg",
+      "description": "Female black t-shirt front, studio",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02212.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-04.jpg",
+      "description": "Female facing camera, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02213.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-05.jpg",
+      "description": "Female neutral pose, black t-shirt CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02214.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-06.jpg",
+      "description": "Female direct gaze, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02220.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-07.jpg",
+      "description": "Female pulling hem, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02222.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-08.jpg",
+      "description": "Female looking down, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02248.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-09.jpg",
+      "description": "Female with nose ring, black t-shirt CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02252.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-10.jpg",
+      "description": "Female profile, black t-shirt CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02270.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-11.jpg",
+      "description": "Female ponytail, black t-shirt front",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02275.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-12.jpg",
+      "description": "Female hands behind back, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02280.jpg",
+      "proposed_name": "tshirt-schwarz-back-building-print-studio-01.jpg",
+      "description": "Black t-shirt back, building print",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02315.jpg",
+      "proposed_name": "tshirt-schwarz-back-building-print-studio-02.jpg",
+      "description": "Black t-shirt back, Hegau text",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02337.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-front-back-studio-duo-01.jpg",
+      "description": "Male hoodie front + female t-shirt back",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02338.jpg",
+      "proposed_name": "hoodie-schwarz-detail-logo-studio-male-01.jpg",
+      "description": "Close-up CSH logo on black hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02340.jpg",
+      "proposed_name": "hoodie-schwarz-detail-logo-studio-macro-01.jpg",
+      "description": "Macro CSH logo on black hoodie knit",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02347.jpg",
+      "proposed_name": "tshirt-schwarz-detail-logo-lifestyle-01.jpg",
+      "description": "Close-up CSH logo on black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02351.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-02.jpg",
+      "description": "Male hands in pockets, black hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02362.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-03.jpg",
+      "description": "Male smiling, black hoodie front",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02369.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-front-studio-duo-01.jpg",
+      "description": "Duo both showing front CSH logos",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02371.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-front-studio-duo-02.jpg",
+      "description": "Duo side by side, front logos",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02384.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-13.jpg",
+      "description": "Female t-shirt front, partial hoodie at edge",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02396.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-detail-logo-lifestyle-01.jpg",
+      "description": "Lifestyle close-up hoodie + t-shirt logos",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02402.jpg",
+      "proposed_name": "tshirt-schwarz-detail-logo-studio-01.jpg",
+      "description": "Studio detail CSH logo on t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02428.jpg",
+      "proposed_name": "hoodie-schwarz-detail-logo-studio-macro-02.jpg",
+      "description": "Extreme macro CSH logo on hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02443-2.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-back-building-print-lifestyle-bw-01.jpg",
+      "description": "B&W hallway, back prints on both",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02443.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-back-building-print-lifestyle-01.jpg",
+      "description": "Hallway walk, back building prints",
+      "product": "hoodie-schwarz|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02465.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-lifestyle-male-01.jpg",
+      "description": "Male back view in hallway",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02478.jpg",
+      "proposed_name": "hoodie-schwarz-front-lifestyle-male-hallway-01.jpg",
+      "description": "Male hallway, black hoodie front",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02486.jpg",
+      "proposed_name": "tshirt-schwarz-front-lifestyle-female-hallway-01.jpg",
+      "description": "Female walking hallway, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 1",
+      "original": "DSC02487.jpg",
+      "proposed_name": "tshirt-schwarz-front-lifestyle-female-hallway-02.jpg",
+      "description": "Female candid hallway, black t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "CSH_white.png",
+      "proposed_name": "brand-logo-weiss-front.png",
+      "description": "CSH circular logo white on black, slogan LERNE LERNEN",
+      "product": null,
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02516.jpg",
+      "proposed_name": "ref-hoodie-grau-front-lifestyle-outdoor-01.jpg",
+      "description": "Non-merch grey hoodie, outdoor lifestyle (no CSH logo)",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02522.jpg",
+      "proposed_name": "ref-hoodie-grau-front-lifestyle-outdoor-marker-01.jpg",
+      "description": "Non-merch grey hoodie, pointing marker outdoors",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02588.jpg",
+      "proposed_name": "hoodie-blau-front-lifestyle-portrait-male-01.jpg",
+      "description": "Navy hoodie CSH logo, close portrait",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02596.jpg",
+      "proposed_name": "hoodie-blau-front-studio-male-01.jpg",
+      "description": "Navy CSH hoodie, male waist-up studio",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02613.jpg",
+      "proposed_name": "hoodie-blau-detail-logo-studio-01.jpg",
+      "description": "Close-up CSH logo on navy hoodie fabric",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02623.jpg",
+      "proposed_name": "hoodie-blau-front-studio-male-02.jpg",
+      "description": "Male pulling hoodie hem, navy CSH logo",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02634.jpg",
+      "proposed_name": "hoodie-weiss-front-studio-female-01.jpg",
+      "description": "Female white CSH hoodie, studio",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02639.jpg",
+      "proposed_name": "hoodie-weiss-front-studio-female-02.jpg",
+      "description": "Female white hoodie, hand in pocket",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02648.jpg",
+      "proposed_name": "hoodie-weiss-front-studio-female-03.jpg",
+      "description": "Female white hoodie, direct gaze",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02656.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-studio-01.jpg",
+      "description": "White hoodie back, building print",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02678.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-front-studio-duo-01.jpg",
+      "description": "Navy + white hoodies front, studio duo",
+      "product": "hoodie-blau|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02741.jpg",
+      "proposed_name": "ref-sweater-grau-front-lifestyle-indoor-01.jpg",
+      "description": "Non-merch grey knit sweater, art room",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02747.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-04.jpg",
+      "description": "Male black CSH hoodie, hands in pockets",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02767.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-05.jpg",
+      "description": "Male black hoodie smiling off-camera",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02814.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-studio-02.jpg",
+      "description": "Male back, black hoodie building print",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02839.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-06.jpg",
+      "description": "Male black hoodie, arms behind back",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02841.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-male-profile-01.jpg",
+      "description": "Male black hoodie, three-quarter profile",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02881.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-01.jpg",
+      "description": "Three hoodies navy/white/black front",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02894.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-02.jpg",
+      "description": "Three hoodies mid-thigh group",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02907.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-03.jpg",
+      "description": "Three hoodies three-quarter length",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02913.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-fullbody-01.jpg",
+      "description": "Three hoodies full-body front",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02936.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-interaction-01.jpg",
+      "description": "Three hoodies interacting candid",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02952.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-04.jpg",
+      "description": "Three hoodies medium-full group",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02953.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-highangle-01.jpg",
+      "description": "High-angle three hoodies full-body",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02964.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-front-studio-group-waistup-01.jpg",
+      "description": "Waist-up three hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02975.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-fullbody-01.jpg",
+      "description": "Three hoodies back, building prints",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02979.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-01.jpg",
+      "description": "Back group arms on shoulders",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02983.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-02.jpg",
+      "description": "Back group posed camaraderie",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02994.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-03.jpg",
+      "description": "Back group arms draped",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02995.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-04.jpg",
+      "description": "Back group Hegau illustration",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC02999.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-05.jpg",
+      "description": "Back group arms on shoulders",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03004.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-studio-group-posed-06.jpg",
+      "description": "Back group three hoodies posed",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03016.jpg",
+      "proposed_name": "tshirt-weiss-front-lifestyle-male-indoor-01.jpg",
+      "description": "Male white CSH t-shirt, blurred indoor",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03050.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-01.jpg",
+      "description": "Three white CSH t-shirts tucked in",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03066.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-02.jpg",
+      "description": "Three white t-shirts waist-up",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03067.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-03.jpg",
+      "description": "Three white t-shirts mixed tuck",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03070.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-04.jpg",
+      "description": "Three white t-shirts hands in pockets",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03071.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-05.jpg",
+      "description": "Three white t-shirts serious expressions",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03073.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-group-06.jpg",
+      "description": "Three white t-shirts promotional",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03089.jpg",
+      "proposed_name": "tshirt-weiss-back-studio-group-01.jpg",
+      "description": "Three white t-shirts back building print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03091.jpg",
+      "proposed_name": "tshirt-weiss-back-studio-male-01.jpg",
+      "description": "Male white t-shirt back building print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03093.jpg",
+      "proposed_name": "tshirt-weiss-back-studio-male-arms-crossed-01.jpg",
+      "description": "Male white t-shirt back, arms crossed",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03094.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-01.jpg",
+      "description": "Center front logo, sides back print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03109.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-02.jpg",
+      "description": "Front/back combo group studio",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03116.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-laugh-01.jpg",
+      "description": "Group laughing, front/back combo",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03123.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-03.jpg",
+      "description": "Three models front/back combo",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03124.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-04.jpg",
+      "description": "Female front, males back print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03125.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-05.jpg",
+      "description": "White t-shirt front and back designs",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03129.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-lifestyle-group-smile-01.jpg",
+      "description": "Smiling center front, flanks back",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03134.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-group-06.jpg",
+      "description": "Three models front/back studio",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03146.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-duo-01.jpg",
+      "description": "Male back + female front duo",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03155.jpg",
+      "proposed_name": "combo-tshirt-weiss-front-back-studio-duo-02.jpg",
+      "description": "Female front + male back duo",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03165.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-male-01.jpg",
+      "description": "Male white CSH t-shirt three-quarter",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03171.jpg",
+      "proposed_name": "tshirt-weiss-back-studio-male-02.jpg",
+      "description": "Male white t-shirt back gripping hem",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03177.jpg",
+      "proposed_name": "tshirt-weiss-back-studio-male-03.jpg",
+      "description": "Full back white t-shirt building print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03182.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-male-02.jpg",
+      "description": "Male white t-shirt hands in pockets",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03208.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-male-smile-01.jpg",
+      "description": "Smiling male white CSH t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03210.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-male-smile-02.jpg",
+      "description": "Male smiling white CSH t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03219.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-male-neutral-01.jpg",
+      "description": "Male neutral white CSH t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03226.jpg",
+      "proposed_name": "tshirt-weiss-back-building-print-studio-male-01.jpg",
+      "description": "Male back white t-shirt building print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03235.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-studio-02.jpg",
+      "description": "White hoodie back, partial second model",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03266.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-female-01.jpg",
+      "description": "Female white CSH t-shirt, gold jewelry",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03271.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-female-02.jpg",
+      "description": "Female white t-shirt, hair pulled back",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03279.jpg",
+      "proposed_name": "tshirt-weiss-front-studio-female-03.jpg",
+      "description": "Female white t-shirt, sleek bun",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03314.jpg",
+      "proposed_name": "combo-tshirt-hoodie-weiss-front-back-studio-duo-01.jpg",
+      "description": "T-shirt back + hoodie front duo",
+      "product": "tshirt-weiss|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03315.jpg",
+      "proposed_name": "combo-tshirt-hoodie-weiss-front-back-studio-duo-02.jpg",
+      "description": "T-shirt back + hoodie front duo alt",
+      "product": "tshirt-weiss|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03316.jpg",
+      "proposed_name": "combo-tshirt-hoodie-weiss-front-back-hood-up-studio-01.jpg",
+      "description": "T-shirt front + hoodie back hood up",
+      "product": "tshirt-weiss|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03329.jpg",
+      "proposed_name": "combo-tshirt-hoodie-weiss-front-back-studio-duo-03.jpg",
+      "description": "T-shirt front + hoodie back duo",
+      "product": "tshirt-weiss|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03330.jpg",
+      "proposed_name": "combo-tshirt-hoodie-weiss-front-back-studio-duo-fullbody-01.jpg",
+      "description": "Full-body t-shirt/hoodie duo",
+      "product": "tshirt-weiss|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03335.jpg",
+      "proposed_name": "tshirt-weiss-front-lifestyle-male-phone-indoor-01.jpg",
+      "description": "Male seated with phone, white CSH t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03342.jpg",
+      "proposed_name": "tshirt-weiss-front-lifestyle-male-chair-indoor-01.jpg",
+      "description": "Male lounging in chair, white t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03361.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-group-carry-fun-01.jpg",
+      "description": "Three black t-shirts playful carry pose",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03376.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-group-carry-fun-02.jpg",
+      "description": "Group carry pose black t-shirts",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03398.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-female-14.jpg",
+      "description": "Female black t-shirt, hands on belt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03419.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-group-three-01.jpg",
+      "description": "Three models black CSH t-shirts waist-up",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03424.jpg",
+      "proposed_name": "tshirt-schwarz-front-studio-group-three-fullbody-01.jpg",
+      "description": "Full-body group three black t-shirts",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03449.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-female-smile-01.jpg",
+      "description": "Blonde woman smiling, black CSH hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03452.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-female-clasped-01.jpg",
+      "description": "Blonde woman clasped hands, black hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03468.jpg",
+      "proposed_name": "hoodie-schwarz-front-studio-female-laughing-01.jpg",
+      "description": "Blonde woman laughing, black CSH hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03493.jpg",
+      "proposed_name": "combo-hoodie-tshirt-multi-front-studio-group-four-01.jpg",
+      "description": "Four models all CSH hoodie/t-shirt colors",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03495.jpg",
+      "proposed_name": "combo-hoodie-tshirt-schwarz-weiss-front-studio-duo-fullbody-01.jpg",
+      "description": "Black t-shirt + white hoodie duo",
+      "product": "tshirt-schwarz|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03505.jpg",
+      "proposed_name": "combo-hoodie-tshirt-multi-front-studio-group-four-02.jpg",
+      "description": "Four models inverted logo colors",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03508.jpg",
+      "proposed_name": "combo-hoodie-tshirt-multi-front-studio-group-four-03.jpg",
+      "description": "Four models adult + students",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03528.jpg",
+      "proposed_name": "combo-hoodie-tshirt-multi-front-studio-group-four-04.jpg",
+      "description": "Four models alternating black/white",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03545.jpg",
+      "proposed_name": "combo-hoodie-tshirt-weiss-schwarz-front-studio-duo-fullbody-01.jpg",
+      "description": "White hoodie + black t-shirt duo",
+      "product": "hoodie-weiss|tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03584.jpg",
+      "proposed_name": "combo-hoodie-weiss-schwarz-back-outdoor-snow-group-01.jpg",
+      "description": "Four hoodies back, snowy shelter",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03585.jpg",
+      "proposed_name": "combo-hoodie-weiss-schwarz-back-outdoor-snow-walking-01.jpg",
+      "description": "Four hoodies walking arm-in-arm snow",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03601.jpg",
+      "proposed_name": "combo-hoodie-weiss-schwarz-back-outdoor-snow-highangle-01.jpg",
+      "description": "High-angle snow walk, hoodies back",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03630.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-female-01.jpg",
+      "description": "Female white hoodie, snowy outdoor blur",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03636.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-female-02.jpg",
+      "description": "Female white hoodie looking off-camera",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03647.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-front-outdoor-couple-01.jpg",
+      "description": "Navy + white hoodie couple outdoors",
+      "product": "hoodie-blau|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03649.jpg",
+      "proposed_name": "hoodie-schwarz-front-lifestyle-outdoor-male-snow-01.jpg",
+      "description": "Male black hoodie snowy outdoor",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03651.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-female-smile-01.jpg",
+      "description": "Female smiling white hoodie outdoors",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03661.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-female-laugh-01.jpg",
+      "description": "Female laughing hands on hips, white hoodie",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03675.jpg",
+      "proposed_name": "hoodie-schwarz-front-lifestyle-outdoor-male-pockets-01.jpg",
+      "description": "Male black hoodie outdoor pockets",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03683.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-female-03.jpg",
+      "description": "Female white hoodie outdoor portrait",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03692.jpg",
+      "proposed_name": "hoodie-blau-front-lifestyle-outdoor-male-hood-hold-01.jpg",
+      "description": "Male holding hood edges, navy hoodie snow",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03696.jpg",
+      "proposed_name": "hoodie-blau-front-lifestyle-outdoor-male-pocket-01.jpg",
+      "description": "Male navy hoodie kangaroo pocket outdoor",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03708.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-outdoor-snow-01.jpg",
+      "description": "Black hoodie back snow field",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03735.jpg",
+      "proposed_name": "hoodie-schwarz-front-lifestyle-outdoor-snowball-01.jpg",
+      "description": "Male throwing snowball, black hoodie",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03770.jpg",
+      "proposed_name": "hoodie-blau-back-building-print-outdoor-snow-walking-01.jpg",
+      "description": "Navy hoodie back walking in snow",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03780.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-snow-walking-01.jpg",
+      "description": "White hoodie back walking snow",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03793.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-outdoor-snow-ledge-01.jpg",
+      "description": "Black hoodie back on snowy ledge",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03815.jpg",
+      "proposed_name": "hoodie-weiss-side-lifestyle-outdoor-duo-01.jpg",
+      "description": "Female white hoodie side view, duo blur",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03818.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-closeup-01.jpg",
+      "description": "Close-up white hoodie back print snow",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03825.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-female-01.jpg",
+      "description": "Female white hoodie back snowy outdoor",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03831.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-hood-up-01.jpg",
+      "description": "White hoodie back hood up snow",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03856.jpg",
+      "proposed_name": "combo-hoodie-blau-weiss-schwarz-back-outdoor-snow-jumping-01.jpg",
+      "description": "Three hoodies jumping off snowy ledge",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03895.jpg",
+      "proposed_name": "hoodie-schwarz-detail-logo-outdoor-snow-action-01.jpg",
+      "description": "Close-up black CSH logo, snow motion blur",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03907.jpg",
+      "proposed_name": "hoodie-weiss-detail-logo-closeup-01.jpg",
+      "description": "Macro white hoodie CSH logo drawstrings",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03942.jpg",
+      "proposed_name": "combo-hoodie-schwarz-weiss-back-outdoor-campus-walking-01.jpg",
+      "description": "Two hoodies walking campus path back",
+      "product": "hoodie-schwarz|hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03945.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body back black hoodie campus walk",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03975.jpg",
+      "proposed_name": "hoodie-blau-front-lifestyle-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body navy hoodie front campus",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03988.jpg",
+      "proposed_name": "hoodie-blau-back-building-print-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body navy hoodie back campus",
+      "product": "hoodie-blau",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC03999.jpg",
+      "proposed_name": "hoodie-schwarz-front-lifestyle-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body black hoodie front campus",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04016.jpg",
+      "proposed_name": "hoodie-schwarz-back-building-print-outdoor-campus-fullbody-01-2.jpg",
+      "description": "Full-body black hoodie back campus",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04038.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body white hoodie front campus snow",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04055.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-campus-fullbody-01.jpg",
+      "description": "Full-body white hoodie back campus",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04073.jpg",
+      "proposed_name": "hoodie-weiss-front-lifestyle-outdoor-campus-fullbody-02.jpg",
+      "description": "Female white hoodie campus courtyard",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04104.jpg",
+      "proposed_name": "hoodie-weiss-back-building-print-outdoor-campus-hood-adjust-01.jpg",
+      "description": "Female adjusting hood, white back print",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04115.jpg",
+      "proposed_name": "combo-hoodie-weiss-back-outdoor-campus-walking-duo-01.jpg",
+      "description": "Two females walking white hoodies back",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 2",
+      "original": "DSC04184.jpg",
+      "proposed_name": "ref-styling-jeans-sneaker-detail-01.jpg",
+      "description": "Ed Hardy jeans + Nike Dunk detail (not merch)",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "0D7D6328-E1B6-497B-BFC7-4A424E40C490.JPG",
+      "proposed_name": "lifestyle-courtyard-deck-hoodie-tshirt-back-outdoor-01.jpg",
+      "description": "Three on wooden deck, back prints",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "149B2C7C-9E0B-4D88-95DA-35B2A115FD40.JPG",
+      "proposed_name": "lifestyle-campus-overhang-hoodie-group-outdoor-01.jpg",
+      "description": "Three under building overhang, hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "1531A501-03F8-469C-9254-C167E93844E5.JPG",
+      "proposed_name": "lifestyle-field-tshirt-back-walking-outdoor-01.jpg",
+      "description": "Three walking field, t-shirt back prints",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "1D82DA16-084B-4F71-8ABF-87176B2BE692.JPG",
+      "proposed_name": "lifestyle-wooden-wall-hoodie-duo-outdoor-01.jpg",
+      "description": "Boy white + girl black hoodie at wood wall",
+      "product": "hoodie-weiss|hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "2102B720-B26B-47C0-B65D-85087DE1808C.JPG",
+      "proposed_name": "lifestyle-beam-hoodie-group-front-outdoor-01.jpg",
+      "description": "Five on wooden beam, navy/black/white hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "2BF659AD-F334-4C9C-805F-F3A4EF3BDFC7.JPG",
+      "proposed_name": "lifestyle-baseball-field-tshirt-catching-outdoor-01.jpg",
+      "description": "Boy catching baseball, black CSH t-shirt",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "34931596-78D8-4EC5-81C7-94074588E2E9.JPG",
+      "proposed_name": "lifestyle-courtyard-hoodie-back-front-outdoor-01.jpg",
+      "description": "Black hoodie back + white hoodie front courtyard",
+      "product": "hoodie-schwarz|hoodie-weiss",
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "3CEF4077-342C-4D5A-B3C8-DD959457886E.JPG",
+      "proposed_name": "lifestyle-hallway-hoodie-tshirt-back-indoor-01.jpg",
+      "description": "Hallway walk back prints hoodie+t-shirt",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "41B7CD8A-23A2-41E2-A3AA-FFFE2FB28318.JPG",
+      "proposed_name": "lifestyle-stairs-hoodie-christmas-indoor-group-01.jpg",
+      "description": "Santa hats on stairs, black/white hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "47DE69C6-E083-40EA-B829-44E99297C5FC.JPG",
+      "proposed_name": "lifestyle-beam-hoodie-back-group-outdoor-01.jpg",
+      "description": "Five on beam looking back, hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "4D15BC29-7CF9-4095-AB4B-3918F7283C15.JPG",
+      "proposed_name": "lifestyle-park-hoodie-weiss-front-outdoor-smile-01.jpg",
+      "description": "Male smiling white CSH hoodie in park",
+      "product": "hoodie-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "58CC2B65-CE6D-4CD7-A558-0B3B3113DD09.JPG",
+      "proposed_name": "lifestyle-stairs-hoodie-tshirt-christmas-indoor-02.jpg",
+      "description": "Six on stairs Santa hats mixed merch",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "5C5906A7-4D95-43C0-9CEE-2EA910AE9ECD.JPG",
+      "proposed_name": "lifestyle-baseball-field-tshirt-weiss-catching-outdoor-01.jpg",
+      "description": "Boy catching baseball white t-shirt back",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "65242502-89F1-4653-9FBB-87CC54818218.JPG",
+      "proposed_name": "ref-prop-tulips-table-indoor-01.jpg",
+      "description": "Tulips in vase on table — shoot prop only",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "7015AD98-F9AA-4865-8366-70CEAC0906E2.JPG",
+      "proposed_name": "lifestyle-wooden-wall-hoodie-group-outdoor-01.jpg",
+      "description": "Six on deck against slatted wall",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "74615829-17DE-495D-BB1B-88C77D1E424B.JPG",
+      "proposed_name": "lifestyle-study-booth-hoodie-tshirt-indoor-01.jpg",
+      "description": "Green study booth three students",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "7C1C4433-80F7-4456-93A0-55FB0B6E8A1A.JPG",
+      "proposed_name": "lifestyle-study-booth-hoodie-tshirt-indoor-02.jpg",
+      "description": "Study booth collaboration shot",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "84D79A9F-DA7D-4744-B1EC-AEE28EDAD896.JPG",
+      "proposed_name": "lifestyle-stonewall-hoodie-back-goldenhour-outdoor-01.jpg",
+      "description": "Five on stone wall golden hour back prints",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "99BAE4E4-BA99-4E54-BAC6-FEC4520B8C25.JPG",
+      "proposed_name": "lifestyle-field-tshirt-back-walking-outdoor-02.jpg",
+      "description": "Three walking field t-shirt backs",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "9A97784E-5827-4407-8FD7-EA2CFC020D35.JPG",
+      "proposed_name": "lifestyle-courtyard-deck-handstand-tshirt-outdoor-01.jpg",
+      "description": "Handstand on deck white t-shirt",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "9EECC2CF-8033-46CD-AB81-C18EC299571F.JPG",
+      "proposed_name": "lifestyle-pingpong-tshirt-group-outdoor-01.jpg",
+      "description": "Three on ping-pong table black/white tees",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "A08488AB-B26B-47E9-919C-5AD66A11FC2C.JPG",
+      "proposed_name": "lifestyle-wooden-wall-hoodie-group-outdoor-02.jpg",
+      "description": "Six posing on wooden deck",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "B406D1E0-62DD-4B05-ACDA-DA6F7B563A2A.JPG",
+      "proposed_name": "lifestyle-stonewall-hoodie-mixed-outdoor-01.jpg",
+      "description": "Five on stone ledge mixed front/back",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "BAB15144-71DC-4A30-8A60-4CA225767353.JPG",
+      "proposed_name": "lifestyle-deck-table-studying-hoodie-tshirt-outdoor-01.jpg",
+      "description": "Three studying at outdoor wooden table",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "C0F42A8C-BC66-46B4-A823-97096BAFECAC.JPG",
+      "proposed_name": "lifestyle-deck-table-studying-hoodie-back-outdoor-01.jpg",
+      "description": "Outdoor table study, black hoodie back",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "CC072290-AE0C-405F-9C77-0C6FFA6CBBB3.JPG",
+      "proposed_name": "lifestyle-logs-tshirt-talking-outdoor-01.jpg",
+      "description": "Three on logs hillside black/white tees",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "D28747A6-2F44-440A-8AF8-E2458D07B39A.JPG",
+      "proposed_name": "lifestyle-study-booth-hoodie-tshirt-indoor-03.jpg",
+      "description": "Study booth girl t-shirt back boys hoodies",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "DC580CED-9987-467F-828B-0CC4A75A3EDE.JPG",
+      "proposed_name": "lifestyle-logbench-tshirt-scenic-outdoor-01.jpg",
+      "description": "Log bench overlooking fields, t-shirts",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "E9A21697-3243-40A3-AB27-C97BFF37C24A.JPG",
+      "proposed_name": "lifestyle-bench-hoodie-back-whisper-outdoor-01.jpg",
+      "description": "Two girls bench navy/black hoodie backs",
+      "product": "hoodie-blau|hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "EA478945-97EA-414A-AED3-9BC2945CA01B.JPG",
+      "proposed_name": "lifestyle-wooden-wall-hoodie-group-outdoor-03.jpg",
+      "description": "Six lined up on wooden deck",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "EB1080EF-3C7F-4949-BE29-D229C14FD919.JPG",
+      "proposed_name": "lifestyle-field-tshirt-back-walking-outdoor-03.jpg",
+      "description": "Three walking grassy hill t-shirt backs",
+      "product": "tshirt-schwarz|tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Shooting 3",
+      "original": "FC28DBA8-9885-429F-BD7B-1421140F290D.JPG",
+      "proposed_name": "lifestyle-floor-hoodie-tshirt-christmas-indoor-back-01.jpg",
+      "description": "Six on floor Santa hats back prints",
+      "product": "multi",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "Bild 01.12.23 um 15.37.jpeg",
+      "proposed_name": "brand-building-sketch-lineart.jpeg",
+      "description": "Hand-drawn CSH school building line art",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "CSH-Front.jpeg",
+      "proposed_name": "ref-school-building-exterior-day.jpeg",
+      "description": "CSH Gemeindezentrum daytime exterior",
+      "product": null,
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Blanked",
+      "original": "CSH_white.png",
+      "proposed_name": "brand-logo-weiss.png",
+      "description": "CSH circular white logo asset",
+      "product": null,
+      "tags": [],
+      "shop_curated": true
+    },
+    {
+      "folder": "Blanked",
+      "original": "ChatGPT Image Jan 29, 2026, 11_53_54 AM.png",
+      "proposed_name": "ref-school-building-exterior-dusk-ai.png",
+      "description": "AI-generated school at dusk",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "SpringPicca.jpg",
+      "proposed_name": "ref-background-cherry-blossom-spring.jpg",
+      "description": "Cherry blossom spring background",
+      "product": null,
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 15.55.15 (1).jpeg",
+      "proposed_name": "ref-mockup-tshirt-schwarz-back-building.jpeg",
+      "description": "Mockup black t-shirt back building print",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 15.55.15 (2).jpeg",
+      "proposed_name": "ref-mockup-tshirt-weiss-front-logo.jpeg",
+      "description": "Mockup white t-shirt front CSH logo",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 15.55.15.jpeg",
+      "proposed_name": "ref-mockup-hoodie-schwarz-back-building.jpeg",
+      "description": "Mockup black hoodie back building print",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 15.55.16 (1).jpeg",
+      "proposed_name": "ref-mockup-tshirt-schwarz-front-logo.jpeg",
+      "description": "Mockup black t-shirt front CSH logo",
+      "product": "tshirt-schwarz",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 15.55.16.jpeg",
+      "proposed_name": "ref-mockup-tshirt-weiss-back-building.jpeg",
+      "description": "Mockup white t-shirt back building print",
+      "product": "tshirt-weiss",
+      "tags": [],
+      "shop_curated": false
+    },
+    {
+      "folder": "Blanked",
+      "original": "WhatsApp Image 2023-11-24 at 16.00.40 (1).jpeg",
+      "proposed_name": "ref-mockup-hoodie-schwarz-front-logo.jpeg",
+      "description": "Mockup black hoodie front CSH logo",
+      "product": "hoodie-schwarz",
+      "tags": [],
+      "shop_curated": false
+    }
+  ]
+}
