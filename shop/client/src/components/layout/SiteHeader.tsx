@@ -1,11 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Search, ShoppingBag, X } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import { containerStagger, fadeUp, transition } from "@/lib/motion";
 import { useCart } from "@/contexts/CartContext";
 import { useIntro } from "@/contexts/IntroContext";
 import { useNav } from "@/contexts/NavContext";
-import { useSearch } from "@/contexts/SearchContext";
 import { scrollToTop } from "@/lib/scroll";
 import { catalog } from "@/assets/images";
 
@@ -23,21 +23,29 @@ function scrollToAbstimmung() {
 export default function SiteHeader() {
   const [location, navigate] = useLocation();
   const { setOpen: setCartOpen, itemCount } = useCart();
-  const { setOpen: setSearchOpen } = useSearch();
-  const { introComplete, showSplash, headerLogoRef } = useIntro();
-  const { menuOpen, setMenuOpen } = useNav();
+  const { introComplete, showSplash, headerLogoRef, replayIntro } = useIntro();
+  const { menuOpen, setMenuOpen, openMenu } = useNav();
 
   const closeMenu = () => setMenuOpen(false);
 
-  const handleLogoHome = () => {
-    closeMenu();
-    if (location !== "/") navigate("/");
-    scrollToTop();
+  /** Same full-screen nav as the splash big-logo click. */
+  const handleLogoClick = () => {
+    if (menuOpen) {
+      closeMenu();
+      return;
+    }
+    openMenu();
   };
 
   const handleNavLink = () => {
     closeMenu();
     scrollToTop();
+  };
+
+  const handleStartLogo = () => {
+    closeMenu();
+    replayIntro();
+    if (location !== "/") navigate("/");
   };
 
   const handleAbstimmung = () => {
@@ -50,7 +58,17 @@ export default function SiteHeader() {
     }
   };
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
   const navItems = [
+    { key: "start", label: "Start", onClick: handleStartLogo },
     ...ROUTE_LINKS.map((l) => ({ key: l.href, label: l.label, href: l.href })),
     { key: "abstimmung", label: "Abstimmung", onClick: handleAbstimmung },
     { key: "back", label: "Zurück", onClick: closeMenu },
@@ -63,8 +81,9 @@ export default function SiteHeader() {
           <button
             type="button"
             className="csh-header__logo-link"
-            onClick={handleLogoHome}
-            aria-label="Zur Startseite"
+            onClick={handleLogoClick}
+            aria-label={menuOpen ? "Menü schliessen" : "Menü öffnen"}
+            aria-expanded={menuOpen}
           >
             <img
               ref={headerLogoRef}
@@ -74,14 +93,6 @@ export default function SiteHeader() {
             />
           </button>
           <div className="csh-header__actions">
-            <button
-              type="button"
-              className="csh-header__icon"
-              aria-label="Suche"
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search size={17} strokeWidth={1.5} />
-            </button>
             <button
               type="button"
               className="csh-header__icon csh-header__icon--bag"
@@ -99,15 +110,22 @@ export default function SiteHeader() {
         {menuOpen && (
           <motion.div
             className="csh-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={transition}
+            onClick={closeMenu}
           >
             <motion.button
               type="button"
               className="csh-menu__close"
-              onClick={closeMenu}
+              onClick={(e) => {
+                e.stopPropagation();
+                closeMenu();
+              }}
               aria-label="Schliessen"
               variants={fadeUp}
               initial="hidden"
@@ -124,6 +142,7 @@ export default function SiteHeader() {
               initial="hidden"
               animate="visible"
               exit="hidden"
+              onClick={(e) => e.stopPropagation()}
             >
               {navItems.map((item) => (
                 <motion.div key={item.key} variants={fadeUp} transition={transition}>

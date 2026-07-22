@@ -119,7 +119,7 @@ export default function CheckoutPage() {
               <strong>{subtotal} €</strong>
             </p>
             <p className="csh-body csh-checkout__note">
-              Zahlung und Abholung erfolgen vor Ort an der CSH. Keine Online-Zahlung.
+              Zahlung online per PayPal oder Stripe (Schulserver). Abholung an der CSH.
             </p>
           </aside>
         </div>

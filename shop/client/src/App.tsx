@@ -9,9 +9,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import { NavProvider } from "./contexts/NavContext";
 import { IntroProvider } from "./contexts/IntroContext";
-import { SearchProvider } from "./contexts/SearchContext";
 import ScrollToTop from "./components/layout/ScrollToTop";
-import SearchDrawer from "./components/search/SearchDrawer";
 import CartDrawer from "./components/cart/CartDrawer";
 import Home from "./pages/Home";
 import ProductPage from "./pages/ProductPage";
@@ -77,13 +75,10 @@ function App() {
             <CartProvider>
               <NavProvider>
                 <IntroProvider>
-                  <SearchProvider>
-                    <ScrollToTop />
-                    <SearchDrawer />
-                    <CartDrawer />
-                    <Toaster />
-                    <Router />
-                  </SearchProvider>
+                  <ScrollToTop />
+                  <CartDrawer />
+                  <Toaster />
+                  <Router />
                 </IntroProvider>
               </NavProvider>
             </CartProvider>

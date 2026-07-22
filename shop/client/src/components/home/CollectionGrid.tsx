@@ -9,22 +9,53 @@ function formatPrice(n: number) {
   return `${n} €`;
 }
 
+const GROUPS = [
+  { id: "hoodies", label: "Hoodies", filter: (slug: string) => slug.includes("hoodie") },
+  { id: "tshirts", label: "T-Shirts", filter: (slug: string) => slug.includes("t-shirt") },
+] as const;
+
+function scrollToGroup(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export default function CollectionGrid() {
-  const hoodies = PRODUCTS.filter((p) => p.slug.includes("hoodie"));
-  const tees = PRODUCTS.filter((p) => p.slug.includes("t-shirt"));
+  const groups = GROUPS.map((g) => ({
+    ...g,
+    products: PRODUCTS.filter((p) => g.filter(p.slug)),
+  }));
 
   return (
-    <div>
+    <div className="csh-collection">
       <div className="csh-collection__header">
         <h2 className="csh-collection__title">Kollektion</h2>
-        <span className="csh-collection__filter">Letzte Auflage · 5 Artikel</span>
+        <span className="csh-collection__filter">Letzte Auflage · {PRODUCTS.length} Artikel</span>
       </div>
 
-      <p className="csh-collection__group-label">T-Shirts</p>
-      <ProductRow products={tees} />
+      <nav className="csh-collection__chips" aria-label="Produktgruppen">
+        {groups.map((g) => (
+          <button
+            key={g.id}
+            type="button"
+            className="csh-collection__chip"
+            onClick={() => scrollToGroup(g.id)}
+          >
+            {g.label}
+            <span className="csh-collection__chip-count">{g.products.length}</span>
+          </button>
+        ))}
+      </nav>
 
-      <p className="csh-collection__group-label">Hoodies</p>
-      <ProductRow products={hoodies} />
+      <p className="csh-collection__hint">Hoodies und T-Shirts — tippe oben, um zu springen.</p>
+
+      {groups.map((g) => (
+        <section key={g.id} id={g.id} className="csh-collection__group">
+          <div className="csh-collection__group-head">
+            <p className="csh-collection__group-label">{g.label}</p>
+            <span className="csh-collection__group-meta">{g.products.length} Modelle</span>
+          </div>
+          <ProductRow products={g.products} />
+        </section>
+      ))}
     </div>
   );
 }

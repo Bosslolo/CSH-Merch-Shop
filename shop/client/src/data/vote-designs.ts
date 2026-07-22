@@ -16,8 +16,8 @@ export const VOTE_DESIGNS: VoteDesign[] = [
   },
   {
     id: "crest-logo",
-    title: "CSH Wappen",
-    description: "Navy Hoodie mit weissem CSH-Wappen — sportlich-elegant.",
+    title: "CSH Logo",
+    description: "Navy Hoodie mit weissem CSH-Logo — sportlich-elegant.",
     image: catalog.products.hoodieBlauDetail,
   },
   {

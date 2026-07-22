@@ -21,5 +21,5 @@ Open http://localhost:5174
 ## Notes
 
 - Images originally pointed at Manus cloud storage — now wired to local files via `client/src/assets/images.ts`
-- Cart/checkout is placeholder (toast) — Shopify integration is next step
+- Cart + orders API work; **PayPal + Stripe** should use the **same school-server keys as Kaffeeliste** — see [docs/CURSOR-PAYMENTS-SCHOOL-SERVER.md](docs/CURSOR-PAYMENTS-SCHOOL-SERVER.md)
 - Production build: `npm run build && npm start`
