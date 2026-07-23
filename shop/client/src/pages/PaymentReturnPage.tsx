@@ -8,9 +8,17 @@ export default function PaymentReturnPage() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const orderId = params.get("order") || "";
-  const accessToken = params.get("token") || params.get("accessToken") || "";
   const cancelled = params.get("cancelled") === "1";
-  const sessionId = params.get("session_id") || "";
+  const urlToken = params.get("token") || params.get("accessToken") || "";
+  const storageKey = orderId ? `csh-order-token:${orderId}` : "";
+  let accessToken = urlToken;
+  if (!accessToken && storageKey) {
+    try {
+      accessToken = sessionStorage.getItem(storageKey) || "";
+    } catch {
+      accessToken = "";
+    }
+  }
   const [status, setStatus] = useState<"checking" | "paid" | "pending" | "cancelled" | "error">(
     cancelled ? "cancelled" : !orderId ? "error" : "checking"
   );
@@ -25,6 +33,17 @@ export default function PaymentReturnPage() {
       setMessage("Zugangstoken fehlt — öffne den Link aus Stripe erneut oder frage den Admin.");
       return;
     }
+
+    try {
+      sessionStorage.setItem(storageKey, accessToken);
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete("token");
+      clean.searchParams.delete("accessToken");
+      window.history.replaceState({}, "", `${clean.pathname}${clean.search}${clean.hash}`);
+    } catch {
+      /* ignore */
+    }
+
     let cancelledFetch = false;
     (async () => {
       try {
@@ -34,7 +53,7 @@ export default function PaymentReturnPage() {
             "Content-Type": "application/json",
             "X-Order-Access-Token": accessToken,
           },
-          body: JSON.stringify(sessionId ? { sessionId } : {}),
+          body: JSON.stringify({}),
         });
         const data = await res.json();
         if (cancelledFetch) return;
@@ -45,6 +64,11 @@ export default function PaymentReturnPage() {
         }
         if (data.paid) {
           setStatus("paid");
+          try {
+            sessionStorage.removeItem(storageKey);
+          } catch {
+            /* ignore */
+          }
         } else {
           setStatus("pending");
           setMessage(
@@ -61,7 +85,7 @@ export default function PaymentReturnPage() {
     return () => {
       cancelledFetch = true;
     };
-  }, [orderId, cancelled, sessionId, accessToken]);
+  }, [orderId, cancelled, accessToken, storageKey]);
 
   return (
     <div className="csh-page">

@@ -46,8 +46,8 @@ export default function CollectionSmallPage() {
         >
           <div className="csh-small-collection__visual">
             <img
-              src={catalog.hero.lifestyleCrossgen}
-              alt="CSH — von KiTa bis Oberstufe"
+              src={catalog.hero.lifestylePingpong}
+              alt="CSH Gruppe — Kleine Kollektion in Vorbereitung"
             />
             <span className="csh-small-collection__badge">Coming soon</span>
           </div>

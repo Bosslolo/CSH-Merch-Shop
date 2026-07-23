@@ -4,8 +4,10 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import Stripe from "stripe";
 import type { Order, OrdersFile, PaymentMethod } from "../shared/shop-types.js";
 import { withFileLock } from "./file-lock.js";
+import { shopDataLockKey } from "./inventory.js";
 import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
 import {
+  assertStripePublicBaseUrl,
   paymentsConfigured,
   paypalCheckoutUrl,
   shopPublicBaseUrl,
@@ -71,7 +73,7 @@ async function patchOrderPayment(
   orderId: string,
   patch: Partial<Order>
 ): Promise<Order | null> {
-  return withFileLock(ordersPath(projectRoot), () => {
+  return withFileLock(shopDataLockKey(projectRoot), () => {
     const data = loadOrders(projectRoot);
     const order = data.orders.find((o) => o.id === orderId);
     if (!order) return null;
@@ -104,7 +106,8 @@ async function markStripePaid(
     return null;
   }
   const metaOrder = session.metadata?.order_id || session.client_reference_id || "";
-  if (metaOrder && metaOrder !== order.id) return null;
+  if (!metaOrder || metaOrder !== order.id) return null;
+  if (session.payment_status !== "paid") return null;
 
   return patchOrderPayment(projectRoot, order.id, {
     paymentStatus: "paid",
@@ -121,11 +124,10 @@ export function createPaymentHandlers(projectRoot: string) {
   return {
     handlePaymentsStatus(_req: IncomingMessage, res: ServerResponse) {
       const cfg = paymentsConfigured();
+      // Public: booleans only (no business email leak).
       return sendJson(res, 200, {
         paypal: cfg.paypal,
         stripe: cfg.stripe,
-        businessName: process.env.PAYPAL_BUSINESS_NAME || "",
-        businessEmail: process.env.PAYPAL_BUSINESS_EMAIL || "",
       });
     },
 
@@ -141,7 +143,7 @@ export function createPaymentHandlers(projectRoot: string) {
       const dual = rejectDualMethod(order, "paypal");
       if (dual) return sendJson(res, 409, { error: dual });
 
-      const url = paypalCheckoutUrl(order.total);
+      const url = paypalCheckoutUrl(order.total, order.id);
       if (!url) {
         return sendJson(res, 503, {
           error:
@@ -158,10 +160,9 @@ export function createPaymentHandlers(projectRoot: string) {
         orderId: order.id,
         amountEuros: order.total,
         paypalUrl: url,
-        // Back-compat for older clients
         paypalQrUrl: url,
-        businessName: process.env.PAYPAL_BUSINESS_NAME || "",
-        businessEmail: process.env.PAYPAL_BUSINESS_EMAIL || "",
+        reminder:
+          "Bitte Bestellnummer in der PayPal-Notiz lassen. Zahlung wird manuell von der Schülerfirma bestätigt.",
       });
     },
 
@@ -176,6 +177,9 @@ export function createPaymentHandlers(projectRoot: string) {
         return sendJson(res, 503, { error: "Stripe ist nicht konfiguriert." });
       }
 
+      const publicUrlError = assertStripePublicBaseUrl();
+      if (publicUrlError) return sendJson(res, 503, { error: publicUrlError });
+
       const access = requireOrderAccess(projectRoot, req, orderId);
       if (!access.ok) return sendJson(res, access.status, { error: access.error });
       const { order } = access;
@@ -186,7 +190,6 @@ export function createPaymentHandlers(projectRoot: string) {
       const dual = rejectDualMethod(order, "stripe");
       if (dual) return sendJson(res, 409, { error: dual });
 
-      // Reuse open Stripe session when possible (avoids orphaned checkouts).
       if (order.stripeSessionId && order.paymentMethod === "stripe") {
         try {
           const stripe = new Stripe(secret);
@@ -272,7 +275,7 @@ export function createPaymentHandlers(projectRoot: string) {
 
       const access = requireOrderAccess(projectRoot, req, orderId);
       if (!access.ok) return sendJson(res, access.status, { error: access.error });
-      let { order } = access;
+      const { order } = access;
 
       if (order.status === "cancelled") {
         return sendJson(res, 409, { error: "Bestellung ist storniert." });
@@ -281,18 +284,14 @@ export function createPaymentHandlers(projectRoot: string) {
         return sendJson(res, 200, { paid: true });
       }
 
-      let bodySessionId = "";
+      // Ignore client-supplied session ids — only the session stored on the order.
       try {
-        const raw = await readBody(req, 4_096);
-        if (raw.trim()) {
-          const parsed = JSON.parse(raw) as { sessionId?: string; session_id?: string };
-          bodySessionId = (parsed.sessionId || parsed.session_id || "").trim();
-        }
+        await readBody(req, 4_096);
       } catch {
-        /* empty body is fine */
+        /* empty / oversized ignored for confirm */
       }
 
-      const sessionId = bodySessionId || order.stripeSessionId || order.paymentReference || "";
+      const sessionId = order.stripeSessionId || "";
       if (!sessionId) {
         return sendJson(res, 400, { error: "Keine Stripe-Session für diese Bestellung." });
       }
@@ -304,7 +303,7 @@ export function createPaymentHandlers(projectRoot: string) {
           const updated = await markStripePaid(projectRoot, order, session);
           if (!updated) {
             return sendJson(res, 409, {
-              error: "Zahlung passt nicht zur Bestellung (Betrag/Status).",
+              error: "Zahlung passt nicht zur Bestellung (Betrag/Status/Metadaten).",
             });
           }
           return sendJson(res, 200, { paid: true });
@@ -364,9 +363,23 @@ export function createPaymentHandlers(projectRoot: string) {
 
     async markOrderPaidByAdmin(
       orderId: string,
-      method: PaymentMethod = "cash"
+      method: PaymentMethod = "cash",
+      opts: { confirm?: boolean; paymentReference?: string } = {}
     ): Promise<{ ok: true; order: Order } | { ok: false; error: string }> {
-      return withFileLock(ordersPath(projectRoot), () => {
+      if (!opts.confirm) {
+        return {
+          ok: false,
+          error: "Bitte Bestätigung senden (confirm: true). PayPal/Bar wird nicht automatisch geprüft.",
+        };
+      }
+      if (method === "paypal" && !(opts.paymentReference || "").trim()) {
+        return {
+          ok: false,
+          error: "Bei PayPal bitte eine Referenz / Transaktionsnotiz angeben.",
+        };
+      }
+
+      return withFileLock(shopDataLockKey(projectRoot), () => {
         const data = loadOrders(projectRoot);
         const order = data.orders.find((o) => o.id === orderId);
         if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
@@ -376,8 +389,34 @@ export function createPaymentHandlers(projectRoot: string) {
         if (order.paymentStatus === "paid") return { ok: true, order };
         order.paymentStatus = "paid";
         order.paymentMethod = method;
-        order.paymentReference = order.paymentReference || `admin:${new Date().toISOString()}`;
+        order.paymentReference =
+          (opts.paymentReference || "").trim() ||
+          order.paymentReference ||
+          `admin:${method}:${new Date().toISOString()}`;
         if (order.status === "pending") order.status = "confirmed";
+        order.updatedAt = new Date().toISOString();
+        writeJsonFile(ordersPath(projectRoot), data);
+        return { ok: true, order };
+      });
+    },
+
+    async resetOrderPayment(
+      orderId: string
+    ): Promise<{ ok: true; order: Order } | { ok: false; error: string }> {
+      return withFileLock(shopDataLockKey(projectRoot), () => {
+        const data = loadOrders(projectRoot);
+        const order = data.orders.find((o) => o.id === orderId);
+        if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
+        if (order.paymentStatus === "paid") {
+          return { ok: false, error: "Bezahlte Bestellung kann nicht zurückgesetzt werden." };
+        }
+        if (order.status === "cancelled") {
+          return { ok: false, error: "Stornierte Bestellung." };
+        }
+        delete order.paymentMethod;
+        order.paymentStatus = "unpaid";
+        delete order.paymentReference;
+        delete order.stripeSessionId;
         order.updatedAt = new Date().toISOString();
         writeJsonFile(ordersPath(projectRoot), data);
         return { ok: true, order };

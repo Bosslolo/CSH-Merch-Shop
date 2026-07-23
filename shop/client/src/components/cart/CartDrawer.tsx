@@ -9,9 +9,11 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { cartLineKey } from "@/lib/cart";
 import { scrollToTop } from "@/lib/scroll";
+import { useStock } from "@/hooks/useStock";
 
 export default function CartDrawer() {
   const { open, setOpen, items, subtotal, updateQuantity, removeItem } = useCart();
+  const { getAvailable } = useStock();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -41,6 +43,8 @@ export default function CartDrawer() {
             <ul className="csh-cart__lines">
               {items.map((item) => {
                 const key = cartLineKey(item.slug, item.size);
+                const available = getAvailable(item.slug, item.size);
+                const atCap = available !== null && item.quantity >= available;
                 return (
                   <li key={key} className="csh-cart__line">
                     <img src={item.image} alt="" className="csh-cart__thumb" />
@@ -48,12 +52,13 @@ export default function CartDrawer() {
                       <p className="csh-cart__line-name">{item.name}</p>
                       <p className="csh-cart__line-meta">
                         {item.size} · {item.price} €
+                        {available !== null && available < 10 ? ` · max ${available}` : ""}
                       </p>
                       <div className="csh-cart__qty">
                         <button
                           type="button"
                           aria-label="Menge verringern"
-                          onClick={() => updateQuantity(key, item.quantity - 1)}
+                          onClick={() => updateQuantity(key, item.quantity - 1, available)}
                         >
                           <Minus size={14} />
                         </button>
@@ -61,7 +66,8 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           aria-label="Menge erhöhen"
-                          onClick={() => updateQuantity(key, item.quantity + 1)}
+                          disabled={atCap}
+                          onClick={() => updateQuantity(key, item.quantity + 1, available)}
                         >
                           <Plus size={14} />
                         </button>

@@ -1,5 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { type CartLineItem, cartLineKey } from "@/lib/cart";
+
+const CART_STORAGE_KEY = "csh-merch-cart-v1";
 
 interface CartContextValue {
   open: boolean;
@@ -7,39 +9,83 @@ interface CartContextValue {
   items: CartLineItem[];
   itemCount: number;
   subtotal: number;
-  addItem: (item: Omit<CartLineItem, "quantity">, quantity?: number) => void;
-  updateQuantity: (key: string, quantity: number) => void;
+  addItem: (item: Omit<CartLineItem, "quantity">, quantity?: number, maxAvailable?: number | null) => void;
+  updateQuantity: (key: string, quantity: number, maxAvailable?: number | null) => void;
   removeItem: (key: string) => void;
   clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+function loadCart(): CartLineItem[] {
+  try {
+    const raw = sessionStorage.getItem(CART_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as CartLineItem[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (i) =>
+          i &&
+          typeof i.slug === "string" &&
+          typeof i.size === "string" &&
+          typeof i.quantity === "number" &&
+          i.quantity > 0
+      )
+      .map((i) => ({ ...i, quantity: Math.min(10, Math.max(1, Math.floor(i.quantity))) }));
+  } catch {
+    return [];
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<CartLineItem[]>([]);
+  const [items, setItems] = useState<CartLineItem[]>(() =>
+    typeof sessionStorage !== "undefined" ? loadCart() : []
+  );
 
-  const addItem = useCallback((item: Omit<CartLineItem, "quantity">, quantity = 1) => {
-    const key = cartLineKey(item.slug, item.size);
-    setItems((prev) => {
-      const existing = prev.find((i) => cartLineKey(i.slug, i.size) === key);
-      if (existing) {
-        return prev.map((i) =>
-          cartLineKey(i.slug, i.size) === key
-            ? { ...i, quantity: Math.min(10, i.quantity + quantity) }
-            : i
-        );
-      }
-      return [...prev, { ...item, quantity: Math.min(10, quantity) }];
-    });
-    setOpen(true);
-  }, []);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      /* ignore quota */
+    }
+  }, [items]);
 
-  const updateQuantity = useCallback((key: string, quantity: number) => {
+  const addItem = useCallback(
+    (item: Omit<CartLineItem, "quantity">, quantity = 1, maxAvailable: number | null = null) => {
+      const key = cartLineKey(item.slug, item.size);
+      const cap =
+        maxAvailable === null || maxAvailable === undefined
+          ? 10
+          : Math.max(0, Math.min(10, Math.floor(maxAvailable)));
+      setItems((prev) => {
+        const existing = prev.find((i) => cartLineKey(i.slug, i.size) === key);
+        if (existing) {
+          return prev.map((i) =>
+            cartLineKey(i.slug, i.size) === key
+              ? { ...i, quantity: Math.min(cap, i.quantity + quantity) }
+              : i
+          );
+        }
+        const qty = Math.min(cap, Math.max(1, quantity));
+        if (qty <= 0) return prev;
+        return [...prev, { ...item, quantity: qty }];
+      });
+      setOpen(true);
+    },
+    []
+  );
+
+  const updateQuantity = useCallback((key: string, quantity: number, maxAvailable: number | null = null) => {
+    const cap =
+      maxAvailable === null || maxAvailable === undefined
+        ? 10
+        : Math.max(0, Math.min(10, Math.floor(maxAvailable)));
     setItems((prev) => {
       if (quantity <= 0) return prev.filter((i) => cartLineKey(i.slug, i.size) !== key);
       return prev.map((i) =>
-        cartLineKey(i.slug, i.size) === key ? { ...i, quantity: Math.min(10, quantity) } : i
+        cartLineKey(i.slug, i.size) === key ? { ...i, quantity: Math.min(cap, quantity) } : i
       );
     });
   }, []);

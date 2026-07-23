@@ -42,7 +42,7 @@ export default function CollectionEntryCards() {
         >
           <Link href="/kollektion/klein" className="csh-collection-entry__link" onClick={() => scrollToTop()}>
             <div className="csh-collection-entry__media">
-              <img src={catalog.hero.lifestyleCrossgen} alt="Kleine Kollektion — KiTa und Kinder" loading="lazy" />
+              <img src={catalog.hero.lifestylePingpong} alt="Kleine Kollektion — KiTa und Kinder" loading="lazy" />
               <span className="csh-collection-entry__badge">Bald</span>
             </div>
             <div className="csh-collection-entry__body">

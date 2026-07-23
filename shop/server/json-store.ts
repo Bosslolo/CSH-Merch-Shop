@@ -12,9 +12,20 @@ export function readJsonFile<T>(filePath: string, fallback: T): T {
     writeJsonFile(filePath, fallback);
     return fallback;
   }
-  // Strip UTF-8 BOM if present (PowerShell Set-Content often adds it).
-  const raw = fs.readFileSync(filePath, "utf-8").replace(/^\uFEFF/, "");
-  return JSON.parse(raw) as T;
+  try {
+    const raw = fs.readFileSync(filePath, "utf-8").replace(/^\uFEFF/, "");
+    return JSON.parse(raw) as T;
+  } catch (err) {
+    console.error(`[json-store] corrupt JSON at ${filePath}, using fallback:`, err);
+    const bak = `${filePath}.corrupt.${Date.now()}`;
+    try {
+      fs.copyFileSync(filePath, bak);
+    } catch {
+      /* ignore */
+    }
+    writeJsonFile(filePath, fallback);
+    return fallback;
+  }
 }
 
 export function writeJsonFile<T>(filePath: string, data: T) {
@@ -24,7 +35,10 @@ export function writeJsonFile<T>(filePath: string, data: T) {
   fs.renameSync(tmp, filePath);
 }
 
-export async function readBody(req: import("node:http").IncomingMessage, maxBytes = 64_000): Promise<string> {
+export async function readBody(
+  req: import("node:http").IncomingMessage,
+  maxBytes = 64_000
+): Promise<string> {
   let body = "";
   for await (const chunk of req) {
     body += chunk;

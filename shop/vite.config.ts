@@ -8,7 +8,7 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { createAdminHandlers } from "./server/admin";
 import { createHubHandlers } from "./server/hub";
 import { createInventoryHandlers } from "./server/inventory";
-import { createOrderHandlers } from "./server/orders";
+import { createOrderHandlers, startUnpaidOrderCleanup } from "./server/orders";
 import { createPaymentHandlers } from "./server/payments";
 import { loadMerchEnv } from "./server/payments-config";
 import { handleQrImage } from "./server/qr";
@@ -231,14 +231,28 @@ function vitePluginShopApi(): Plugin {
   loadMerchEnv(repoRoot);
 
   const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
-  const { handleCreateOrder } = createOrderHandlers(shopRoot);
+  const orderHandlers = createOrderHandlers(shopRoot);
+  const { handleCreateOrder } = orderHandlers;
   const { handleAdminRequest } = createAdminHandlers(shopRoot);
   const payments = createPaymentHandlers(shopRoot);
   const { handleHubRequest } = createHubHandlers(shopRoot);
+  let cleanupStarted = false;
 
   return {
     name: "csh-shop-api",
     configureServer(server: ViteDevServer) {
+      if (!cleanupStarted) {
+        cleanupStarted = true;
+        startUnpaidOrderCleanup(() => orderHandlers.expireUnpaidOrders());
+      }
+      server.middlewares.use("/__manus__", (_req, res, next) => {
+        if (process.env.NODE_ENV === "production") {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        next();
+      });
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split("?")[0] ?? "";
         if (url.startsWith("/api/admin")) {
@@ -290,7 +304,25 @@ function vitePluginShopApi(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy(), vitePluginVoteApi(), vitePluginShopApi()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  vitePluginManusDebugCollector(),
+  vitePluginStorageProxy(),
+  vitePluginVoteApi(),
+  vitePluginShopApi(),
+  {
+    name: "csh-strip-manus-from-build",
+    closeBundle() {
+      const manusDir = path.resolve(import.meta.dirname, "dist/public/__manus__");
+      if (fs.existsSync(manusDir)) {
+        fs.rmSync(manusDir, { recursive: true, force: true });
+      }
+    },
+  } satisfies Plugin,
+];
 
 export default defineConfig({
   plugins,

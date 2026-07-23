@@ -4,9 +4,8 @@ import { createAuthHandlers } from "./auth.js";
 import { getAdminInventory, setStockLevels } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
 import { createPaymentHandlers } from "./payments.js";
-import { readBody } from "./json-store.js";
+import { readBody, readJsonFile } from "./json-store.js";
 import { DROP_ID } from "./votes.js";
-import fs from "node:fs";
 import path from "node:path";
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
@@ -16,12 +15,10 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 
 function readVotesSummary(projectRoot: string) {
   const filePath = path.join(projectRoot, "data", "votes.json");
-  if (!fs.existsSync(filePath)) {
-    return { totalVotes: 0, tallies: {}, records: 0 };
-  }
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8")) as {
-    records: { dropId: string; designId: string; votedAt: string }[];
-  };
+  const data = readJsonFile<{ records: { dropId: string; designId: string; votedAt: string }[] }>(
+    filePath,
+    { records: [] }
+  );
   const dropRecords = data.records.filter((r) => r.dropId === DROP_ID);
   const tallies: Record<string, number> = {};
   for (const r of dropRecords) {
@@ -95,17 +92,36 @@ export function createAdminHandlers(projectRoot: string) {
           return sendJson(res, 400, { error: "Ungültige Anfrage." });
         }
         let method: PaymentMethod = "cash";
+        let confirm = false;
+        let paymentReference = "";
         if (body.trim()) {
           try {
-            const parsed = JSON.parse(body) as { paymentMethod?: string };
+            const parsed = JSON.parse(body) as {
+              paymentMethod?: string;
+              confirm?: boolean;
+              paymentReference?: string;
+            };
             if (parsed.paymentMethod && VALID_PAY_METHODS.has(parsed.paymentMethod as PaymentMethod)) {
               method = parsed.paymentMethod as PaymentMethod;
             }
+            confirm = Boolean(parsed.confirm);
+            paymentReference = (parsed.paymentReference || "").trim();
           } catch {
             return sendJson(res, 400, { error: "Ungültige Anfrage." });
           }
         }
-        const result = await payments.markOrderPaidByAdmin(decodeURIComponent(payMatch[1]), method);
+        const result = await payments.markOrderPaidByAdmin(decodeURIComponent(payMatch[1]), method, {
+          confirm,
+          paymentReference,
+        });
+        if (!result.ok) return sendJson(res, 400, { error: result.error });
+        const { accessToken: _t, ...safe } = result.order;
+        return sendJson(res, 200, { order: safe });
+      }
+
+      const resetPayMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/reset-payment$/);
+      if (resetPayMatch && req.method === "POST") {
+        const result = await payments.resetOrderPayment(decodeURIComponent(resetPayMatch[1]));
         if (!result.ok) return sendJson(res, 400, { error: result.error });
         const { accessToken: _t, ...safe } = result.order;
         return sendJson(res, 200, { order: safe });
@@ -128,7 +144,10 @@ export function createAdminHandlers(projectRoot: string) {
         if (!parsed.status || !VALID_STATUSES.has(parsed.status as OrderStatus)) {
           return sendJson(res, 400, { error: "Ungültiger Status." });
         }
-        const result = await orders.updateOrderStatus(orderMatch[1], parsed.status as OrderStatus);
+        const result = await orders.updateOrderStatus(
+          decodeURIComponent(orderMatch[1]),
+          parsed.status as OrderStatus
+        );
         if (!result.ok) return sendJson(res, 400, { error: result.error });
         const { accessToken: _t, ...safe } = result.order;
         return sendJson(res, 200, { order: safe });
@@ -154,7 +173,7 @@ export function createAdminHandlers(projectRoot: string) {
         if (!Array.isArray(parsed.updates) || parsed.updates.length === 0) {
           return sendJson(res, 400, { error: "Keine Aktualisierungen." });
         }
-        const result = setStockLevels(projectRoot, parsed.updates);
+        const result = await setStockLevels(projectRoot, parsed.updates);
         if (!result.ok) return sendJson(res, 400, { error: result.error });
         return sendJson(res, 200, getAdminInventory(projectRoot));
       }

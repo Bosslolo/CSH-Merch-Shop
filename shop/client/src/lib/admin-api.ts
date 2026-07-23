@@ -49,14 +49,31 @@ export async function updateOrderStatus(orderId: string, status: string) {
   return data;
 }
 
-export async function markOrderPaid(orderId: string, paymentMethod: "paypal" | "stripe" | "cash" = "cash") {
+export async function markOrderPaid(
+  orderId: string,
+  paymentMethod: "paypal" | "stripe" | "cash" = "cash",
+  opts: { paymentReference?: string } = {}
+) {
   const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/mark-paid`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ paymentMethod }),
+    body: JSON.stringify({
+      paymentMethod,
+      confirm: true,
+      paymentReference: opts.paymentReference || undefined,
+    }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Zahlung konnte nicht markiert werden.");
+  return data;
+}
+
+export async function resetOrderPayment(orderId: string) {
+  const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/reset-payment`, {
+    method: "POST",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Zahlung konnte nicht zurückgesetzt werden.");
   return data;
 }
 

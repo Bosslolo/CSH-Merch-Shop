@@ -9,6 +9,8 @@ export const catalog = {
     lifestyleCrossgen: c("hero/lifestyle-crossgen-hoodies-outdoor.jpg"),
     lifestyleNavyHoodie: c("hero/lifestyle-hero-navy-hoodie-studio.jpg"),
     schoolBuilding: c("hero/school-building-gemeindezentrum.jpg"),
+    schoolCommunityKids: c("hero/school-community-kids.jpg"),
+    lifestylePingpong: c("hero/lifestyle-pingpong-tshirt-group-outdoor.jpg"),
   },
   panel: {
     collectionInset: c("panel/collection-inset-hoodie-lifestyle.jpg"),

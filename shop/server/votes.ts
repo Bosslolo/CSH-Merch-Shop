@@ -1,11 +1,16 @@
 import { createHash } from "node:crypto";
-import fs from "node:fs";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { getClientIp } from "./client-ip.js";
+import { withFileLock } from "./file-lock.js";
+import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
+import { hitRateLimit } from "./rate-limit.js";
 
 export const DROP_ID = "drop-2026-spring";
 const VOTE_COOKIE = "csh_vote";
 const VALID_DESIGNS = new Set(["building-print", "crest-logo", "community-tees"]);
+const VOTE_RATE_MAX = 20;
+const VOTE_RATE_WINDOW_MS = 15 * 60 * 1000;
 
 interface VoteRecord {
   dropId: string;
@@ -19,35 +24,25 @@ interface VotesFile {
   records: VoteRecord[];
 }
 
+function votingEnabled(): boolean {
+  const v = (process.env.VOTING_ENABLED ?? "false").toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 function dataPath(root: string) {
   return path.join(root, "data", "votes.json");
 }
 
-function ensureDataFile(filePath: string) {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify({ records: [] } satisfies VotesFile, null, 2));
-  }
-}
-
 function readVotes(filePath: string): VotesFile {
-  ensureDataFile(filePath);
-  return JSON.parse(fs.readFileSync(filePath, "utf-8")) as VotesFile;
+  return readJsonFile(filePath, { records: [] } satisfies VotesFile);
 }
 
 function writeVotes(filePath: string, data: VotesFile) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  writeJsonFile(filePath, data);
 }
 
 function hashFingerprint(fingerprint: string, ip: string) {
   return createHash("sha256").update(`${fingerprint}|${ip}`).digest("hex");
-}
-
-function getClientIp(req: IncomingMessage): string {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string") return forwarded.split(",")[0]?.trim() ?? "unknown";
-  return req.socket.remoteAddress ?? "unknown";
 }
 
 function parseCookie(req: IncomingMessage, name: string): string | null {
@@ -79,7 +74,7 @@ function parseFingerprintQuery(req: IncomingMessage): string | null {
   const qIndex = raw.indexOf("?");
   if (qIndex < 0) return null;
   const fp = new URLSearchParams(raw.slice(qIndex)).get("fingerprint");
-  return fp && fp.length >= 8 ? fp : null;
+  return fp && fp.length >= 8 && fp.length <= 128 ? fp : null;
 }
 
 export function createVoteHandlers(projectRoot: string) {
@@ -91,7 +86,8 @@ export function createVoteHandlers(projectRoot: string) {
   }
 
   async function handleGet(req: IncomingMessage, res: ServerResponse) {
-    const data = readVotes(filePath);
+    const enabled = votingEnabled();
+    const data = await withFileLock(filePath, () => readVotes(filePath));
     const cookie = parseCookie(req, VOTE_COOKIE);
     const fingerprint = parseFingerprintQuery(req);
     const ip = getClientIp(req);
@@ -102,6 +98,7 @@ export function createVoteHandlers(projectRoot: string) {
       (cookie ? dropRecords.find((r) => r.fingerprintHash === cookie) : undefined);
 
     sendJson(res, 200, {
+      enabled,
       tallies: buildTallies(data.records),
       hasVoted: Boolean(existing),
       votedDesignId: existing?.designId ?? null,
@@ -109,8 +106,27 @@ export function createVoteHandlers(projectRoot: string) {
   }
 
   async function handlePost(req: IncomingMessage, res: ServerResponse) {
+    if (!votingEnabled()) {
+      return sendJson(res, 403, {
+        error: "Abstimmung ist noch nicht freigeschaltet.",
+        enabled: false,
+      });
+    }
+
+    const ip = getClientIp(req);
+    if (hitRateLimit(`vote:ip:${ip}`, VOTE_RATE_MAX, VOTE_RATE_WINDOW_MS)) {
+      return sendJson(res, 429, { error: "Zu viele Versuche. Bitte später erneut." });
+    }
+
     let body = "";
-    for await (const chunk of req) body += chunk;
+    try {
+      body = await readBody(req, 4_096);
+    } catch (e) {
+      if (e instanceof Error && e.message === "BODY_TOO_LARGE") {
+        return sendJson(res, 413, { error: "Anfrage zu gross." });
+      }
+      return sendJson(res, 400, { error: "Ungültige Anfrage." });
+    }
 
     let parsed: { designId?: string; fingerprint?: string };
     try {
@@ -123,50 +139,74 @@ export function createVoteHandlers(projectRoot: string) {
     if (!designId || !VALID_DESIGNS.has(designId)) {
       return sendJson(res, 400, { error: "Unbekanntes Design." });
     }
-    if (!fingerprint || typeof fingerprint !== "string" || fingerprint.length < 8) {
+    if (
+      !fingerprint ||
+      typeof fingerprint !== "string" ||
+      fingerprint.length < 8 ||
+      fingerprint.length > 128
+    ) {
       return sendJson(res, 400, { error: "Fingerabdruck fehlt." });
     }
 
-    const data = readVotes(filePath);
-    const ip = getClientIp(req);
     const fpHash = hashFingerprint(fingerprint, ip);
     const cookie = parseCookie(req, VOTE_COOKIE);
-    const existing = findExistingVote(data.records, fpHash, cookie);
 
-    if (existing) {
-      return sendJson(res, 409, {
-        error: "Du hast bereits abgestimmt.",
-        hasVoted: true,
-        votedDesignId: existing.designId,
-        tallies: buildTallies(data.records),
+    try {
+      const result = await withFileLock(filePath, () => {
+        const data = readVotes(filePath);
+        const existing = findExistingVote(data.records, fpHash, cookie);
+        if (existing) {
+          return {
+            conflict: true as const,
+            existing,
+            tallies: buildTallies(data.records),
+          };
+        }
+
+        data.records.push({
+          dropId: DROP_ID,
+          designId,
+          fingerprintHash: fpHash,
+          ip,
+          votedAt: new Date().toISOString(),
+        });
+        writeVotes(filePath, data);
+        return {
+          conflict: false as const,
+          tallies: buildTallies(data.records),
+          designId,
+        };
       });
+
+      if (result.conflict) {
+        return sendJson(res, 409, {
+          error: "Du hast bereits abgestimmt.",
+          hasVoted: true,
+          votedDesignId: result.existing.designId,
+          tallies: result.tallies,
+        });
+      }
+
+      res.setHeader(
+        "Set-Cookie",
+        `${VOTE_COOKIE}=${fpHash}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`
+      );
+
+      return sendJson(res, 200, {
+        tallies: result.tallies,
+        hasVoted: true,
+        votedDesignId: result.designId,
+      });
+    } catch (err) {
+      console.error("[votes] write failed", err);
+      return sendJson(res, 500, { error: "Stimme konnte nicht gespeichert werden." });
     }
-
-    data.records.push({
-      dropId: DROP_ID,
-      designId,
-      fingerprintHash: fpHash,
-      ip,
-      votedAt: new Date().toISOString(),
-    });
-    writeVotes(filePath, data);
-
-    res.setHeader(
-      "Set-Cookie",
-      `${VOTE_COOKIE}=${fpHash}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`
-    );
-
-    sendJson(res, 200, {
-      tallies: buildTallies(data.records),
-      hasVoted: true,
-      votedDesignId: designId,
-    });
   }
 
   return {
     handleVoteRequest(req: IncomingMessage, res: ServerResponse) {
       if (req.method === "GET") return handleGet(req, res);
-      if (req.method === "POST") return handlePost(req, res);
+      if (req.method === "POST") return void handlePost(req, res);
       sendJson(res, 405, { error: "Method not allowed" });
     },
   };

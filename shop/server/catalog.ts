@@ -1,32 +1,8 @@
-/** Server-side catalog metadata for orders and inventory (mirrors client products). */
-export const CATALOG = [
-  { slug: "csh-hoodie-blau", name: "CSH Hoodie Blau", price: 25, sizes: ["S", "M", "L", "XL"] },
-  { slug: "csh-hoodie-schwarz", name: "CSH Hoodie Schwarz", price: 25, sizes: ["S", "M", "L", "XL"] },
-  { slug: "csh-hoodie-weiss", name: "CSH Hoodie Weiss", price: 25, sizes: ["S", "M", "L", "XL"] },
-  { slug: "csh-t-shirt-schwarz", name: "CSH T-Shirt Schwarz", price: 15, sizes: ["S", "M", "L", "XL"] },
-  { slug: "csh-t-shirt-weiss", name: "CSH T-Shirt Weiss", price: 15, sizes: ["S", "M", "L", "XL"] },
-] as const;
-
-export function getCatalogProduct(slug: string) {
-  return CATALOG.find((p) => p.slug === slug);
-}
-
-export function stockKey(slug: string, size: string) {
-  return `${slug}|${size}`;
-}
-
-export function parseStockKey(key: string): { slug: string; size: string } | null {
-  const i = key.lastIndexOf("|");
-  if (i < 1) return null;
-  return { slug: key.slice(0, i), size: key.slice(i + 1) };
-}
-
-export function defaultInventory(): Record<string, number> {
-  const stock: Record<string, number> = {};
-  for (const p of CATALOG) {
-    for (const size of p.sizes) {
-      stock[stockKey(p.slug, size)] = 20;
-    }
-  }
-  return stock;
-}
+/** Server-side catalog — re-exports shared meta so prices cannot drift from the client. */
+export {
+  CATALOG_META as CATALOG,
+  getCatalogMeta as getCatalogProduct,
+  stockKey,
+  parseStockKey,
+  defaultInventory,
+} from "../shared/catalog-meta.js";

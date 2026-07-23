@@ -9,12 +9,15 @@ function stockKey(slug: string, size: string) {
 export function useStock() {
   const [stock, setStock] = useState<StockMap>({});
   const [loading, setLoading] = useState(true);
+  /** true when /api/stock failed — buyers should be blocked (fail closed). */
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/stock");
+        if (!res.ok) throw new Error("stock http");
         const data = await res.json();
         if (cancelled) return;
         const map: StockMap = {};
@@ -22,8 +25,12 @@ export function useStock() {
           map[stockKey(entry.slug, entry.size)] = entry.quantity;
         }
         setStock(map);
+        setUnavailable(false);
       } catch {
-        if (!cancelled) setStock({});
+        if (!cancelled) {
+          setStock({});
+          setUnavailable(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -33,7 +40,11 @@ export function useStock() {
     };
   }, []);
 
-  const getAvailable = (slug: string, size: string) => stock[stockKey(slug, size)] ?? null;
+  const getAvailable = (slug: string, size: string): number | null => {
+    if (unavailable) return 0;
+    if (loading) return null;
+    return stock[stockKey(slug, size)] ?? 0;
+  };
 
-  return { stock, loading, getAvailable };
+  return { stock, loading, unavailable, getAvailable };
 }

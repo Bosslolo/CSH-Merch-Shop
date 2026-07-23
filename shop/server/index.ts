@@ -6,7 +6,7 @@ import { createAdminHandlers } from "./admin.js";
 import { buildHubSnapshot, createHubHandlers } from "./hub.js";
 import { startHubPush } from "./hub-push.js";
 import { createInventoryHandlers } from "./inventory.js";
-import { createOrderHandlers } from "./orders.js";
+import { createOrderHandlers, startUnpaidOrderCleanup } from "./orders.js";
 import { createPaymentHandlers } from "./payments.js";
 import { loadMerchEnv } from "./payments-config.js";
 import { handleQrImage } from "./qr.js";
@@ -28,7 +28,8 @@ async function startServer() {
 
   const { handleVoteRequest } = createVoteHandlers(shopRoot);
   const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
-  const { handleCreateOrder } = createOrderHandlers(shopRoot);
+  const orderHandlers = createOrderHandlers(shopRoot);
+  const { handleCreateOrder } = orderHandlers;
   const { handleAdminRequest } = createAdminHandlers(shopRoot);
   const payments = createPaymentHandlers(shopRoot);
   const { handleHubRequest } = createHubHandlers(shopRoot);
@@ -85,6 +86,10 @@ async function startServer() {
 
   app.use(express.static(staticPath));
 
+  app.use("/__manus__", (_req, res) => {
+    res.status(404).end();
+  });
+
   app.get("*", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
@@ -96,12 +101,22 @@ async function startServer() {
     if (!process.env.ADMIN_PASSWORD) {
       console.warn("WARN: ADMIN_PASSWORD not set — admin login disabled.");
     }
-    if (!(process.env.PAYPAL_MANAGED_QR_ID || "").trim()) {
-      console.warn("WARN: PAYPAL_MANAGED_QR_ID missing — PayPal QR checkout disabled.");
+    if (!process.env.ADMIN_SESSION_SECRET) {
+      console.warn(
+        "WARN: ADMIN_SESSION_SECRET not set — sessions fall back to ADMIN_PASSWORD. Set a dedicated secret."
+      );
+    }
+    if (
+      !(process.env.PAYPAL_MANAGED_QR_ID || "").trim() &&
+      !(process.env.PAYPAL_ME_HANDLE || "").trim() &&
+      !(process.env.PAYPAL_BUSINESS_EMAIL || "").trim()
+    ) {
+      console.warn("WARN: PayPal not configured — PayPal checkout disabled.");
     }
     if (!(process.env.STRIPE_SECRET_KEY || "").trim()) {
       console.warn("WARN: STRIPE_SECRET_KEY missing — Stripe checkout disabled.");
     }
+    startUnpaidOrderCleanup(() => orderHandlers.expireUnpaidOrders());
     startHubPush(() => buildHubSnapshot(shopRoot), "csh-merch");
   });
 }

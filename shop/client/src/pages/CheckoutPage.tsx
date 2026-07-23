@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -10,8 +10,6 @@ import { cartLineKey } from "@/lib/cart";
 type PaymentsStatus = {
   paypal: boolean;
   stripe: boolean;
-  businessName?: string;
-  businessEmail?: string;
 };
 
 type PayMethod = "paypal" | "stripe" | null;
@@ -37,7 +35,6 @@ function openPayment(url: string, name = "csh_pay"): Window | null {
     `popup=yes,width=${w},height=${h},left=${left},top=${top},noopener,noreferrer`
   );
   if (!popup) {
-    // Popup blocked → fall back to same-tab redirect
     window.location.href = url;
     return null;
   }
@@ -56,6 +53,7 @@ export default function CheckoutPage() {
   const [grade, setGrade] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [orderTotal, setOrderTotal] = useState<number | null>(null);
@@ -132,6 +130,8 @@ export default function CheckoutPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (items.length === 0) return;
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders", {
@@ -158,7 +158,6 @@ export default function CheckoutPage() {
 
       const hasPaypal = Boolean(payments?.paypal);
       const hasStripe = Boolean(payments?.stripe);
-      // One method only → open payment immediately (redirect / popup).
       if (hasPaypal && !hasStripe) {
         await startPaypal(data.orderId, token);
       } else if (hasStripe && !hasPaypal) {
@@ -167,6 +166,7 @@ export default function CheckoutPage() {
     } catch {
       toast("Verbindungsfehler. Bitte später erneut versuchen.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }
@@ -193,17 +193,18 @@ export default function CheckoutPage() {
               wurde gespeichert. Bitte jetzt bezahlen — die Zahlung öffnet sich direkt
               (Handy: Weiterleitung, PC: Popup-Fenster).
             </p>
+            <p className="csh-body csh-checkout__note">
+              Bei PayPal die Bestellnummer in der Notiz lassen. Die Schülerfirma bestätigt den
+              Zahlungseingang manuell.
+            </p>
 
             <div className="csh-checkout__pay">
               {showPaypal && (
                 <section className="csh-checkout__pay-block">
                   <h2 className="csh-serif">PayPal</h2>
                   <p className="csh-body">
-                    Direkt in PayPal bezahlen. Betrag ist vorausgefüllt.
-                    {payments?.businessName
-                      ? ` Empfänger: ${payments.businessName}.`
-                      : ""}{" "}
-                    Nach der Zahlung bestätigt die Schülerfirma den Eingang.
+                    Direkt in PayPal bezahlen. Betrag ist vorausgefüllt. Nach der Zahlung bestätigt
+                    die Schülerfirma den Eingang.
                   </p>
                   {accessToken ? (
                     <button
@@ -264,19 +265,36 @@ export default function CheckoutPage() {
               <form className="csh-checkout__form" onSubmit={handleSubmit}>
                 <label className="csh-checkout__field">
                   Name
-                  <input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} />
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    minLength={2}
+                    maxLength={80}
+                  />
                 </label>
                 <label className="csh-checkout__field">
                   E-Mail
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    maxLength={120}
+                  />
                 </label>
                 <label className="csh-checkout__field">
                   Klasse / Stufe (optional)
-                  <input value={grade} onChange={(e) => setGrade(e.target.value)} />
+                  <input value={grade} onChange={(e) => setGrade(e.target.value)} maxLength={80} />
                 </label>
                 <label className="csh-checkout__field">
                   Anmerkung (optional)
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                  />
                 </label>
                 <button type="submit" className="csh-btn" disabled={submitting}>
                   {submitting ? "Wird gesendet…" : `Bestellen — ${subtotal} €`}

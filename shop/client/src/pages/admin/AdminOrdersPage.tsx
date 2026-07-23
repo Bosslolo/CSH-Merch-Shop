@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { AdminGuard } from "@/contexts/AdminContext";
-import { fetchAdminOrders, markOrderPaid, updateOrderStatus } from "@/lib/admin-api";
+import {
+  fetchAdminOrders,
+  markOrderPaid,
+  resetOrderPayment,
+  updateOrderStatus,
+} from "@/lib/admin-api";
 import AdminLayout from "./AdminLayout";
 
 interface Order {
@@ -43,21 +48,65 @@ export default function AdminOrdersPage() {
     void load();
   }, []);
 
-  async function changeStatus(orderId: string, status: string) {
+  async function changeStatus(orderId: string, status: string, prev: string) {
+    if (status === prev) return;
+    const label = STATUS_LABELS[status] ?? status;
+    if (!window.confirm(`Status wirklich auf „${label}“ setzen?`)) {
+      await load();
+      return;
+    }
     try {
       await updateOrderStatus(orderId, status);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler beim Aktualisieren.");
+      await load();
     }
   }
 
   async function markPaid(orderId: string, paymentMethod: "paypal" | "cash") {
+    let paymentReference = "";
+    if (paymentMethod === "paypal") {
+      const ref = window.prompt(
+        "PayPal-Referenz / Transaktionsnotiz (Pflicht — Betrag und Bestell-ID prüfen!):"
+      );
+      if (ref === null) return;
+      paymentReference = ref.trim();
+      if (!paymentReference) {
+        setError("PayPal-Referenz fehlt.");
+        return;
+      }
+    }
+    if (
+      !window.confirm(
+        paymentMethod === "paypal"
+          ? `PayPal-Zahlung für ${orderId} wirklich bestätigen?\n(Shop prüft PayPal nicht automatisch.)`
+          : `Barzahlung für ${orderId} wirklich bestätigen?`
+      )
+    ) {
+      return;
+    }
     try {
-      await markOrderPaid(orderId, paymentMethod);
+      await markOrderPaid(orderId, paymentMethod, { paymentReference });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Fehler beim Markieren der Zahlung.");
+    }
+  }
+
+  async function resetPayment(orderId: string) {
+    if (
+      !window.confirm(
+        `Zahlungsart für ${orderId} zurücksetzen? (Nur wenn noch nicht bezahlt — z. B. PayPal → Karte wechseln.)`
+      )
+    ) {
+      return;
+    }
+    try {
+      await resetOrderPayment(orderId);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler beim Zurücksetzen.");
     }
   }
 
@@ -84,7 +133,7 @@ export default function AdminOrdersPage() {
                   <select
                     className="admin-select"
                     value={order.status}
-                    onChange={(e) => void changeStatus(order.id, e.target.value)}
+                    onChange={(e) => void changeStatus(order.id, e.target.value, order.status)}
                   >
                     {Object.entries(STATUS_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -115,6 +164,15 @@ export default function AdminOrdersPage() {
                       >
                         Bar bezahlt
                       </button>
+                      {order.paymentStatus === "pending" && (
+                        <button
+                          type="button"
+                          className="admin-btn"
+                          onClick={() => void resetPayment(order.id)}
+                        >
+                          Zahlung zurücksetzen
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

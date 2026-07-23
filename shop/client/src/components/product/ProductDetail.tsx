@@ -17,14 +17,16 @@ interface Props {
 export default function ProductDetail({ product }: Props) {
   const [size, setSize] = useState("");
   const [activeImage, setActiveImage] = useState(product.image);
-  const { addItem } = useCart();
-  const { getAvailable, loading: stockLoading } = useStock();
+  const { addItem, items } = useCart();
+  const { getAvailable, loading: stockLoading, unavailable } = useStock();
 
   const others = useMemo(() => {
     const tees = PRODUCTS.filter((p) => p.slug.includes("t-shirt") && p.slug !== product.slug);
     const hoodies = PRODUCTS.filter((p) => p.slug.includes("hoodie") && p.slug !== product.slug);
     return [...tees, ...hoodies].slice(0, 3);
   }, [product.slug]);
+
+  const stockBlocked = unavailable || stockLoading;
 
   return (
     <article className="product-detail">
@@ -87,7 +89,7 @@ export default function ProductDetail({ product }: Props) {
             <div className="product-page__sizes">
               {product.sizes.map((s) => {
                 const available = getAvailable(product.slug, s);
-                const soldOut = !stockLoading && available !== null && available <= 0;
+                const soldOut = stockBlocked || (available !== null && available <= 0);
                 return (
                   <button
                     key={s}
@@ -95,13 +97,24 @@ export default function ProductDetail({ product }: Props) {
                     className={`product-page__size${size === s ? " is-active" : ""}${soldOut ? " is-disabled" : ""}`}
                     onClick={() => !soldOut && setSize(s)}
                     disabled={soldOut}
-                    title={soldOut ? "Ausverkauft" : undefined}
+                    title={
+                      unavailable
+                        ? "Bestand gerade nicht ladbar"
+                        : soldOut
+                          ? "Ausverkauft"
+                          : undefined
+                    }
                   >
                     {s}
                   </button>
                 );
               })}
             </div>
+            {unavailable && (
+              <p className="csh-body" style={{ marginTop: "0.5rem" }}>
+                Bestand konnte nicht geladen werden — Bestellen ist gerade nicht möglich.
+              </p>
+            )}
           </motion.div>
 
           <motion.button
@@ -109,23 +122,38 @@ export default function ProductDetail({ product }: Props) {
             className="csh-btn"
             variants={fadeUp}
             transition={transition}
+            disabled={stockBlocked}
             onClick={() => {
+              if (stockBlocked) {
+                toast("Bitte warte, bis der Bestand geladen ist.");
+                return;
+              }
               if (!size) {
                 toast("Bitte zuerst eine Groesse wählen.");
                 return;
               }
               const available = getAvailable(product.slug, size);
-              if (available !== null && available <= 0) {
+              if (available === null || available <= 0) {
                 toast("Diese Groesse ist leider ausverkauft.");
                 return;
               }
-              addItem({
-                slug: product.slug,
-                name: product.name,
-                size,
-                price: product.price,
-                image: product.image,
-              });
+              const inCart =
+                items.find((i) => i.slug === product.slug && i.size === size)?.quantity ?? 0;
+              if (inCart >= available) {
+                toast(`Nur noch ${available} Stück verfügbar.`);
+                return;
+              }
+              addItem(
+                {
+                  slug: product.slug,
+                  name: product.name,
+                  size,
+                  price: product.price,
+                  image: product.image,
+                },
+                1,
+                available
+              );
               toast(`${product.name} (${size}) wurde hinzugefügt.`);
             }}
           >

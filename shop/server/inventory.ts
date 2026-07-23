@@ -2,19 +2,24 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { InventoryFile, PublicStockEntry } from "../shared/shop-types.js";
 import { CATALOG, defaultInventory, getCatalogProduct, stockKey } from "./catalog.js";
+import { withFileLock } from "./file-lock.js";
 import { readJsonFile, writeJsonFile } from "./json-store.js";
 
 function inventoryPath(root: string) {
   return path.join(root, "data", "inventory.json");
 }
 
-function loadInventory(root: string): InventoryFile {
+/** Shared lock key so order create + stock mutations never interleave across modules. */
+export function shopDataLockKey(root: string) {
+  return path.join(root, "data", ".shop-data.lock");
+}
+
+function loadInventoryUnlocked(root: string): InventoryFile {
   const fallback: InventoryFile = {
     stock: defaultInventory(),
     updatedAt: new Date().toISOString(),
   };
   const data = readJsonFile(inventoryPath(root), fallback);
-  // Ensure any new catalog variants exist
   let changed = false;
   for (const p of CATALOG) {
     for (const size of p.sizes) {
@@ -32,21 +37,22 @@ function loadInventory(root: string): InventoryFile {
   return data;
 }
 
-function saveInventory(root: string, data: InventoryFile) {
+function saveInventoryUnlocked(root: string, data: InventoryFile) {
   data.updatedAt = new Date().toISOString();
   writeJsonFile(inventoryPath(root), data);
 }
 
 export function getStockQuantity(root: string, slug: string, size: string): number {
-  const data = loadInventory(root);
+  const data = loadInventoryUnlocked(root);
   return data.stock[stockKey(slug, size)] ?? 0;
 }
 
-export function adjustStock(
+/** Must be called while holding shopDataLockKey(root) when used with concurrent order writes. */
+export function adjustStockUnlocked(
   root: string,
   adjustments: { slug: string; size: string; delta: number }[]
 ): { ok: true } | { ok: false; error: string } {
-  const data = loadInventory(root);
+  const data = loadInventoryUnlocked(root);
   for (const { slug, size, delta } of adjustments) {
     const product = getCatalogProduct(slug);
     if (!product || !product.sizes.includes(size as (typeof product.sizes)[number])) {
@@ -59,31 +65,44 @@ export function adjustStock(
     }
     data.stock[key] = next;
   }
-  saveInventory(root, data);
+  saveInventoryUnlocked(root, data);
   return { ok: true };
 }
 
-export function setStockLevels(
+export async function adjustStock(
+  root: string,
+  adjustments: { slug: string; size: string; delta: number }[]
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  return withFileLock(shopDataLockKey(root), () => adjustStockUnlocked(root, adjustments));
+}
+
+export async function setStockLevels(
   root: string,
   updates: { slug: string; size: string; quantity: number }[]
-): { ok: true; data: InventoryFile } | { ok: false; error: string } {
-  const data = loadInventory(root);
-  for (const { slug, size, quantity } of updates) {
-    const product = getCatalogProduct(slug);
-    if (!product || !product.sizes.includes(size as (typeof product.sizes)[number])) {
-      return { ok: false, error: `Ungültige Variante: ${slug} / ${size}` };
+): Promise<{ ok: true; data: InventoryFile } | { ok: false; error: string }> {
+  return withFileLock(shopDataLockKey(root), () => {
+    const data = loadInventoryUnlocked(root);
+    const MAX_STOCK = 500;
+    for (const { slug, size, quantity } of updates) {
+      const product = getCatalogProduct(slug);
+      if (!product || !product.sizes.includes(size as (typeof product.sizes)[number])) {
+        return { ok: false, error: `Ungültige Variante: ${slug} / ${size}` };
+      }
+      if (!Number.isInteger(quantity) || quantity < 0) {
+        return { ok: false, error: "Bestand muss eine ganze Zahl >= 0 sein." };
+      }
+      if (quantity > MAX_STOCK) {
+        return { ok: false, error: `Bestand darf höchstens ${MAX_STOCK} sein.` };
+      }
+      data.stock[stockKey(slug, size)] = quantity;
     }
-    if (!Number.isInteger(quantity) || quantity < 0) {
-      return { ok: false, error: "Bestand muss eine ganze Zahl >= 0 sein." };
-    }
-    data.stock[stockKey(slug, size)] = quantity;
-  }
-  saveInventory(root, data);
-  return { ok: true, data };
+    saveInventoryUnlocked(root, data);
+    return { ok: true, data };
+  });
 }
 
 export function getPublicStock(root: string): PublicStockEntry[] {
-  const data = loadInventory(root);
+  const data = loadInventoryUnlocked(root);
   const entries: PublicStockEntry[] = [];
   for (const p of CATALOG) {
     for (const size of p.sizes) {
@@ -98,7 +117,7 @@ export function getPublicStock(root: string): PublicStockEntry[] {
 }
 
 export function getAdminInventory(root: string) {
-  const data = loadInventory(root);
+  const data = loadInventoryUnlocked(root);
   return {
     updatedAt: data.updatedAt,
     products: CATALOG.map((p) => ({

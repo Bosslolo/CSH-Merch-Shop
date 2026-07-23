@@ -66,12 +66,17 @@ export function paypalManagedQrUrl(amountEuros: number): string | null {
   );
 }
 
-/** Browser / app-friendly PayPal link (no QR scan). Prefer PayPal.me, then managed QR page. */
-export function paypalCheckoutUrl(amountEuros: number): string | null {
+/**
+ * Browser / app-friendly PayPal link. Prefer PayPal.me, then business email, then managed QR.
+ * `orderId` is embedded in the item/note so admins can match payments (manual confirm still required).
+ */
+export function paypalCheckoutUrl(amountEuros: number, orderId?: string): string | null {
   const amount = amountEuros.toFixed(2);
+  const label = orderId ? `CSH Merch ${orderId}` : "CSH Merch";
   const meHandle = (process.env.PAYPAL_ME_HANDLE || "").trim().replace(/^@/, "");
   if (meHandle) {
-    return `https://www.paypal.com/paypalme/${encodeURIComponent(meHandle)}/${amount}`;
+    const base = `https://www.paypal.com/paypalme/${encodeURIComponent(meHandle)}/${amount}`;
+    return orderId ? `${base}?note=${encodeURIComponent(orderId)}` : base;
   }
   const email = (process.env.PAYPAL_BUSINESS_EMAIL || "").trim();
   if (email) {
@@ -80,9 +85,10 @@ export function paypalCheckoutUrl(amountEuros: number): string | null {
       business: email,
       amount,
       currency_code: "EUR",
-      item_name: "CSH Merch",
+      item_name: label,
+      item_number: orderId || "",
       no_shipping: "1",
-      no_note: "1",
+      no_note: "0",
     });
     return `https://www.paypal.com/cgi-bin/webscr?${params.toString()}`;
   }
@@ -114,7 +120,7 @@ export function paymentsConfigured(): { paypal: boolean; stripe: boolean } {
   };
 }
 
-/** Prefer configured public HTTPS shop URL for Stripe redirects. */
+/** Prefer configured public shop URL for Stripe redirects. */
 export function shopPublicBaseUrl(): string {
   const configured = (
     process.env.STRIPE_SUCCESS_BASE_URL ||
@@ -123,6 +129,18 @@ export function shopPublicBaseUrl(): string {
   ).trim();
   if (configured) return configured.replace(/\/$/, "");
   return "http://localhost:5174";
+}
+
+/** Stripe Checkout must not start in production with a localhost return URL. */
+export function assertStripePublicBaseUrl(): string | null {
+  const base = shopPublicBaseUrl();
+  const isProd =
+    process.env.NODE_ENV === "production" ||
+    process.env.CSH_REQUIRE_PUBLIC_URL === "1";
+  if (isProd && /localhost|127\.0\.0\.1/i.test(base)) {
+    return "SHOP_PUBLIC_BASE_URL / STRIPE_SUCCESS_BASE_URL muss in Produktion gesetzt sein (nicht localhost).";
+  }
+  return null;
 }
 
 export function adminCookieShouldBeSecure(): boolean {

@@ -59,6 +59,7 @@ export default function AdminStockPage() {
       return { slug, size, quantity };
     });
     if (updates.length === 0) return;
+    if (!window.confirm(`Bestand für ${updates.length} Variante(n) speichern?`)) return;
     setSaving(true);
     try {
       const data = await saveInventoryUpdates(updates);

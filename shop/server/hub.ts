@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import fs from "node:fs";
 import path from "node:path";
 import { DROP_ID } from "./votes.js";
 import { getAdminInventory } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
+import { readJsonFile } from "./json-store.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -19,10 +19,9 @@ function getBearerToken(req: IncomingMessage): string | null {
 
 function readVotesSummary(projectRoot: string) {
   const filePath = path.join(projectRoot, "data", "votes.json");
-  if (!fs.existsSync(filePath)) return { total: 0, tallies: {} };
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8")) as {
-    records: { dropId: string; designId: string }[];
-  };
+  const data = readJsonFile<{ records: { dropId: string; designId: string }[] }>(filePath, {
+    records: [],
+  });
   const dropRecords = data.records.filter((r) => r.dropId === DROP_ID);
   const tallies: Record<string, number> = {};
   for (const r of dropRecords) tallies[r.designId] = (tallies[r.designId] ?? 0) + 1;
@@ -46,6 +45,9 @@ export function buildHubSnapshot(projectRoot: string): Record<string, unknown> {
 
   const problems: string[] = [];
   if (!process.env.ADMIN_PASSWORD) problems.push("ADMIN_PASSWORD nicht gesetzt.");
+  if (!process.env.ADMIN_SESSION_SECRET) {
+    problems.push("ADMIN_SESSION_SECRET fehlt — Session nutzt Passwort als Secret.");
+  }
   if (lowStock.length > 0) problems.push(`${lowStock.length} Varianten mit niedrigem Bestand.`);
   if (pending > 5) problems.push(`${pending} offene Bestellungen warten auf Bearbeitung.`);
 
@@ -72,6 +74,7 @@ export function createHubHandlers(projectRoot: string) {
       const token = getBearerToken(req) ?? "";
       const valid =
         expected.length > 0 &&
+        expected !== "generate-a-long-random-string" &&
         token.length === expected.length &&
         timingSafeEqual(Buffer.from(token), Buffer.from(expected));
       if (!valid) {

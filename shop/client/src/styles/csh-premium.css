@@ -1800,9 +1800,34 @@
   max-width: 40rem;
 }
 
-.csh-vote__loading {
-  opacity: 0.6;
-  margin: 0;
+.csh-vote__total--soon {
+  background: rgba(15, 31, 61, 0.78);
+}
+
+.csh-vote__instruction--soon {
+  background: rgba(180, 140, 60, 0.12);
+  color: rgba(15, 31, 61, 0.78);
+}
+
+.csh-vote__card--soon {
+  opacity: 0.92;
+}
+
+.csh-vote__card--soon .csh-vote__media img {
+  filter: saturate(0.92);
+}
+
+.csh-vote__badge--soon {
+  background: rgba(15, 31, 61, 0.9);
+  color: #fff;
+}
+
+.csh-vote__soon-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(15, 31, 61, 0.45);
 }
 
 /* --- Search drawer --- */
