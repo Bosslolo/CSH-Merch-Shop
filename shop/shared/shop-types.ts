@@ -1,4 +1,6 @@
 export type OrderStatus = "pending" | "confirmed" | "fulfilled" | "cancelled";
+export type PaymentStatus = "unpaid" | "pending" | "paid";
+export type PaymentMethod = "paypal" | "stripe" | "cash";
 
 export interface OrderLineItem {
   slug: string;
@@ -17,12 +19,18 @@ export interface CustomerInfo {
 
 export interface Order {
   id: string;
+  /** Capability secret required for public payment endpoints (never list in admin UI as linkable). */
+  accessToken: string;
   status: OrderStatus;
   customer: CustomerInfo;
   items: OrderLineItem[];
   total: number;
   createdAt: string;
   updatedAt: string;
+  paymentStatus?: PaymentStatus;
+  paymentMethod?: PaymentMethod;
+  paymentReference?: string;
+  stripeSessionId?: string;
 }
 
 export interface OrdersFile {

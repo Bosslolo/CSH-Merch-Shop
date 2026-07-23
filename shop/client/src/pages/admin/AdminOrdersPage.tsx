@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminGuard } from "@/contexts/AdminContext";
-import { fetchAdminOrders, updateOrderStatus } from "@/lib/admin-api";
+import { fetchAdminOrders, markOrderPaid, updateOrderStatus } from "@/lib/admin-api";
 import AdminLayout from "./AdminLayout";
 
 interface Order {
@@ -10,6 +10,8 @@ interface Order {
   items: { productName: string; size: string; quantity: number; unitPrice: number }[];
   total: number;
   createdAt: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -50,6 +52,15 @@ export default function AdminOrdersPage() {
     }
   }
 
+  async function markPaid(orderId: string, paymentMethod: "paypal" | "cash") {
+    try {
+      await markOrderPaid(orderId, paymentMethod);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fehler beim Markieren der Zahlung.");
+    }
+  }
+
   return (
     <AdminGuard>
       <AdminLayout title="Bestellungen">
@@ -82,6 +93,30 @@ export default function AdminOrdersPage() {
                     ))}
                   </select>
                   <p className="admin-order-card__total">{order.total} €</p>
+                  {order.paymentStatus && (
+                    <p className="admin-muted">
+                      Zahlung: {order.paymentStatus}
+                      {order.paymentMethod ? ` (${order.paymentMethod})` : ""}
+                    </p>
+                  )}
+                  {order.paymentStatus !== "paid" && order.status !== "cancelled" && (
+                    <div className="admin-order-card__pay-actions">
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={() => void markPaid(order.id, "paypal")}
+                      >
+                        PayPal bezahlt
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={() => void markPaid(order.id, "cash")}
+                      >
+                        Bar bezahlt
+                      </button>
+                    </div>
+                  )}
                 </div>
               </header>
               <ul className="admin-order-card__items">

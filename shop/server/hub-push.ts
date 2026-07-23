@@ -1,8 +1,10 @@
+import { hubPushEnabled, resolveHubPushUrls } from "./hub-push-config.js";
+
 /**
  * Push metrics to the Laurin IT Check hub (outbound — works through school NAT).
  *
  * Env:
- *   HUB_PUSH_URL              comma-separated ingest URLs, e.g. https://hub.icicles.online/api/ingest/csh-merch
+ *   HUB_PUSH_URL / HUB_PUSH_URLS / HUB_PUSH_MODE
  *   HUB_API_KEY               same key as on the hub server
  *   HUB_PUSH_ENABLED          set to "false"/"0" to disable (default: enabled)
  *   HUB_PUSH_INTERVAL_SECONDS push interval, default 60
@@ -11,16 +13,12 @@ export function startHubPush(
   buildSnapshot: () => Promise<Record<string, unknown>> | Record<string, unknown>,
   appName = "csh-merch"
 ): void {
-  const enabled = (process.env.HUB_PUSH_ENABLED ?? "true").toLowerCase();
-  if (enabled === "false" || enabled === "0") {
+  if (!hubPushEnabled()) {
     console.log(`[hub-push] ${appName}: disabled via HUB_PUSH_ENABLED`);
     return;
   }
 
-  const urls = (process.env.HUB_PUSH_URL ?? "")
-    .split(",")
-    .map((u) => u.trim())
-    .filter(Boolean);
+  const urls = resolveHubPushUrls(appName);
   const apiKey = process.env.HUB_API_KEY?.trim() ?? "";
   if (urls.length === 0 || !apiKey) {
     console.log(`[hub-push] ${appName}: skipped — set HUB_PUSH_URL and HUB_API_KEY`);

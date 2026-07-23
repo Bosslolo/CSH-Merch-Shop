@@ -7,22 +7,31 @@ import { buildHubSnapshot, createHubHandlers } from "./hub.js";
 import { startHubPush } from "./hub-push.js";
 import { createInventoryHandlers } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
+import { createPaymentHandlers } from "./payments.js";
+import { loadMerchEnv } from "./payments-config.js";
+import { handleQrImage } from "./qr.js";
 import { createVoteHandlers } from "./votes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, "..");
+const shopRoot = path.resolve(__dirname, "..");
+const projectRoot = path.resolve(shopRoot, "..");
 
 async function startServer() {
+  const loadedEnv = loadMerchEnv(projectRoot);
+  if (loadedEnv.length) {
+    console.log("Loaded env:", loadedEnv.join(" | "));
+  }
+
   const app = express();
   const server = createServer(app);
 
-  const { handleVoteRequest } = createVoteHandlers(projectRoot);
-  const { handlePublicStockRequest } = createInventoryHandlers(projectRoot);
-  const { handleCreateOrder } = createOrderHandlers(projectRoot);
-  const { handleAdminRequest } = createAdminHandlers(projectRoot);
-
-  const { handleHubRequest } = createHubHandlers(projectRoot);
+  const { handleVoteRequest } = createVoteHandlers(shopRoot);
+  const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
+  const { handleCreateOrder } = createOrderHandlers(shopRoot);
+  const { handleAdminRequest } = createAdminHandlers(shopRoot);
+  const payments = createPaymentHandlers(shopRoot);
+  const { handleHubRequest } = createHubHandlers(shopRoot);
 
   app.use("/api/votes", (req, res) => {
     void handleVoteRequest(req, res);
@@ -32,8 +41,32 @@ async function startServer() {
     handlePublicStockRequest(req, res);
   });
 
-  app.use("/api/orders", (req, res) => {
+  app.post("/api/orders", (req, res) => {
     void handleCreateOrder(req, res);
+  });
+
+  app.get("/api/payments/status", (req, res) => {
+    payments.handlePaymentsStatus(req, res);
+  });
+
+  app.get("/api/qr", (req, res) => {
+    void handleQrImage(req, res);
+  });
+
+  app.post("/api/stripe/webhook", (req, res) => {
+    void payments.handleStripeWebhook(req, res);
+  });
+
+  app.get("/api/orders/:orderId/paypal-qr", (req, res) => {
+    payments.handleOrderPayPalQr(req, res, req.params.orderId);
+  });
+
+  app.post("/api/orders/:orderId/stripe-checkout", (req, res) => {
+    void payments.handleOrderStripeCheckout(req, res, req.params.orderId);
+  });
+
+  app.post("/api/orders/:orderId/stripe-confirm", (req, res) => {
+    void payments.handleStripeConfirm(req, res, req.params.orderId);
   });
 
   app.use("/api/hub/snapshot", (req, res) => {
@@ -63,7 +96,13 @@ async function startServer() {
     if (!process.env.ADMIN_PASSWORD) {
       console.warn("WARN: ADMIN_PASSWORD not set — admin login disabled.");
     }
-    startHubPush(() => buildHubSnapshot(projectRoot), "csh-merch");
+    if (!(process.env.PAYPAL_MANAGED_QR_ID || "").trim()) {
+      console.warn("WARN: PAYPAL_MANAGED_QR_ID missing — PayPal QR checkout disabled.");
+    }
+    if (!(process.env.STRIPE_SECRET_KEY || "").trim()) {
+      console.warn("WARN: STRIPE_SECRET_KEY missing — Stripe checkout disabled.");
+    }
+    startHubPush(() => buildHubSnapshot(shopRoot), "csh-merch");
   });
 }
 

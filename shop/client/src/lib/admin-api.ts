@@ -49,6 +49,17 @@ export async function updateOrderStatus(orderId: string, status: string) {
   return data;
 }
 
+export async function markOrderPaid(orderId: string, paymentMethod: "paypal" | "stripe" | "cash" = "cash") {
+  const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/mark-paid`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentMethod }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Zahlung konnte nicht markiert werden.");
+  return data;
+}
+
 export async function fetchAdminInventory() {
   const res = await adminFetch("/api/admin/inventory");
   if (!res.ok) throw new Error("Unauthorized");

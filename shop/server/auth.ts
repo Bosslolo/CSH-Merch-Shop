@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { adminCookieShouldBeSecure } from "./payments-config.js";
 
 const ADMIN_COOKIE = "csh_admin_session";
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
@@ -52,7 +53,8 @@ function parseCookie(req: IncomingMessage, name: string): string | null {
 }
 
 function setSessionCookie(res: ServerResponse, token: string) {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  // Only mark Secure when the public shop URL is HTTPS (LAN HTTP admin must keep working).
+  const secure = adminCookieShouldBeSecure() ? "; Secure" : "";
   res.setHeader(
     "Set-Cookie",
     `${ADMIN_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}${secure}`
@@ -60,7 +62,7 @@ function setSessionCookie(res: ServerResponse, token: string) {
 }
 
 function clearSessionCookie(res: ServerResponse) {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  const secure = adminCookieShouldBeSecure() ? "; Secure" : "";
   res.setHeader("Set-Cookie", `${ADMIN_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
 }
 

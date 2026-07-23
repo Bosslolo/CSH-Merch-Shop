@@ -9,6 +9,9 @@ import { createAdminHandlers } from "./server/admin";
 import { createHubHandlers } from "./server/hub";
 import { createInventoryHandlers } from "./server/inventory";
 import { createOrderHandlers } from "./server/orders";
+import { createPaymentHandlers } from "./server/payments";
+import { loadMerchEnv } from "./server/payments-config";
+import { handleQrImage } from "./server/qr";
 import { createVoteHandlers } from "./server/votes";
 
 // =============================================================================
@@ -223,12 +226,15 @@ function vitePluginVoteApi(): Plugin {
 }
 
 function vitePluginShopApi(): Plugin {
-  const projectRoot = import.meta.dirname;
-  const { handlePublicStockRequest } = createInventoryHandlers(projectRoot);
-  const { handleCreateOrder } = createOrderHandlers(projectRoot);
-  const { handleAdminRequest } = createAdminHandlers(projectRoot);
+  const shopRoot = import.meta.dirname;
+  const repoRoot = path.resolve(shopRoot, "..");
+  loadMerchEnv(repoRoot);
 
-  const { handleHubRequest } = createHubHandlers(projectRoot);
+  const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
+  const { handleCreateOrder } = createOrderHandlers(shopRoot);
+  const { handleAdminRequest } = createAdminHandlers(shopRoot);
+  const payments = createPaymentHandlers(shopRoot);
+  const { handleHubRequest } = createHubHandlers(shopRoot);
 
   return {
     name: "csh-shop-api",
@@ -243,12 +249,39 @@ function vitePluginShopApi(): Plugin {
           handleHubRequest(req, res);
           return;
         }
+        if (url === "/api/payments/status") {
+          payments.handlePaymentsStatus(req, res);
+          return;
+        }
+        if (url === "/api/qr") {
+          void handleQrImage(req, res);
+          return;
+        }
+        if (url === "/api/stripe/webhook" && req.method === "POST") {
+          void payments.handleStripeWebhook(req, res);
+          return;
+        }
         if (url === "/api/stock") {
           handlePublicStockRequest(req, res);
           return;
         }
         if (url === "/api/orders") {
           void handleCreateOrder(req, res);
+          return;
+        }
+        const paypalMatch = url.match(/^\/api\/orders\/([^/]+)\/paypal-qr$/);
+        if (paypalMatch) {
+          payments.handleOrderPayPalQr(req, res, decodeURIComponent(paypalMatch[1]));
+          return;
+        }
+        const stripeCheckoutMatch = url.match(/^\/api\/orders\/([^/]+)\/stripe-checkout$/);
+        if (stripeCheckoutMatch && req.method === "POST") {
+          void payments.handleOrderStripeCheckout(req, res, decodeURIComponent(stripeCheckoutMatch[1]));
+          return;
+        }
+        const stripeConfirmMatch = url.match(/^\/api\/orders\/([^/]+)\/stripe-confirm$/);
+        if (stripeConfirmMatch && req.method === "POST") {
+          void payments.handleStripeConfirm(req, res, decodeURIComponent(stripeConfirmMatch[1]));
           return;
         }
         next();
@@ -284,6 +317,9 @@ export default defineConfig({
       ".manus-asia.computer",
       ".manuscomputer.ai",
       ".manusvm.computer",
+      ".icicles.online",
+      "shop.icicles.online",
+      "shop.cs-bodensee.de",
       "localhost",
       "127.0.0.1",
     ],

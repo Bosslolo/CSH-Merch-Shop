@@ -4,5 +4,9 @@ dist/
 .DS_Store
 # runtime data (orders, votes) stays on the server
 shop/data/
+# secrets — never commit
+config/production.env
+# local logs / pid files
+instance/
 # raw photoshoot archive (~6 GB) — too large for GitHub, keep locally
 Fotoshooting Schülerfirma/

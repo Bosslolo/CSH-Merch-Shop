@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CreateOrderPayload, Order, OrdersFile, OrderStatus } from "../shared/shop-types.js";
 import { getCatalogProduct } from "./catalog.js";
+import { withFileLock } from "./file-lock.js";
 import { adjustStock } from "./inventory.js";
 import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
 
@@ -20,8 +21,12 @@ function saveOrders(root: string, data: OrdersFile) {
 
 function newOrderId(): string {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const rand = randomBytes(3).toString("hex").toUpperCase();
+  const rand = randomBytes(8).toString("hex").toUpperCase();
   return `CSH-${date}-${rand}`;
+}
+
+function newAccessToken(): string {
+  return randomBytes(24).toString("hex");
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
@@ -107,9 +112,12 @@ export function createOrderHandlers(projectRoot: string) {
 
       const total = lineItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
       const now = new Date().toISOString();
+      const accessToken = newAccessToken();
       const order: Order = {
         id: newOrderId(),
+        accessToken,
         status: "pending",
+        paymentStatus: "unpaid",
         customer: {
           name: parsed.customer.name.trim(),
           email: parsed.customer.email.trim().toLowerCase(),
@@ -122,54 +130,71 @@ export function createOrderHandlers(projectRoot: string) {
         updatedAt: now,
       };
 
-      const data = loadOrders(projectRoot);
-      data.orders.unshift(order);
-      saveOrders(projectRoot, data);
+      try {
+        await withFileLock(ordersPath(projectRoot), () => {
+          const data = loadOrders(projectRoot);
+          data.orders.unshift(order);
+          saveOrders(projectRoot, data);
+        });
+      } catch (err) {
+        // Best-effort stock restore if order save fails
+        adjustStock(
+          projectRoot,
+          stockDeltas.map((d) => ({ ...d, delta: -d.delta }))
+        );
+        console.error("[create-order] save failed", err);
+        return sendJson(res, 500, { error: "Bestellung konnte nicht gespeichert werden." });
+      }
 
-      sendJson(res, 201, { orderId: order.id, total });
+      sendJson(res, 201, {
+        orderId: order.id,
+        accessToken,
+        total,
+        paymentStatus: order.paymentStatus,
+      });
     },
 
     getAllOrders(root: string = projectRoot): Order[] {
       return loadOrders(root).orders;
     },
 
-    updateOrderStatus(
+    async updateOrderStatus(
       orderId: string,
       status: OrderStatus
-    ): { ok: true; order: Order } | { ok: false; error: string } {
-      const data = loadOrders(projectRoot);
-      const order = data.orders.find((o) => o.id === orderId);
-      if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
+    ): Promise<{ ok: true; order: Order } | { ok: false; error: string }> {
+      return withFileLock(ordersPath(projectRoot), () => {
+        const data = loadOrders(projectRoot);
+        const order = data.orders.find((o) => o.id === orderId);
+        if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
 
-      const prev = order.status;
-      if (prev === status) return { ok: true, order };
+        const prev = order.status;
+        if (prev === status) return { ok: true, order };
 
-      // Restore stock when cancelling from a non-cancelled state
-      if (status === "cancelled" && prev !== "cancelled") {
-        const restore = order.items.map((i) => ({
-          slug: i.slug,
-          size: i.size,
-          delta: i.quantity,
-        }));
-        const result = adjustStock(projectRoot, restore);
-        if (!result.ok) return { ok: false, error: result.error };
-      }
+        if (status === "cancelled" && prev !== "cancelled") {
+          const restore = order.items.map((i) => ({
+            slug: i.slug,
+            size: i.size,
+            delta: i.quantity,
+          }));
+          const result = adjustStock(projectRoot, restore);
+          if (!result.ok) return { ok: false, error: result.error };
+        }
 
-      // Re-deduct if un-cancelling (rare admin action)
-      if (prev === "cancelled" && status !== "cancelled") {
-        const deduct = order.items.map((i) => ({
-          slug: i.slug,
-          size: i.size,
-          delta: -i.quantity,
-        }));
-        const result = adjustStock(projectRoot, deduct);
-        if (!result.ok) return { ok: false, error: result.error };
-      }
+        if (prev === "cancelled" && status !== "cancelled") {
+          const deduct = order.items.map((i) => ({
+            slug: i.slug,
+            size: i.size,
+            delta: -i.quantity,
+          }));
+          const result = adjustStock(projectRoot, deduct);
+          if (!result.ok) return { ok: false, error: result.error };
+        }
 
-      order.status = status;
-      order.updatedAt = new Date().toISOString();
-      saveOrders(projectRoot, data);
-      return { ok: true, order };
+        order.status = status;
+        order.updatedAt = new Date().toISOString();
+        saveOrders(projectRoot, data);
+        return { ok: true, order };
+      });
     },
   };
 }

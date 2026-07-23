@@ -1,8 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { OrderStatus } from "../shared/shop-types.js";
+import type { OrderStatus, PaymentMethod } from "../shared/shop-types.js";
 import { createAuthHandlers } from "./auth.js";
 import { getAdminInventory, setStockLevels } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
+import { createPaymentHandlers } from "./payments.js";
 import { readBody } from "./json-store.js";
 import { DROP_ID } from "./votes.js";
 import fs from "node:fs";
@@ -34,14 +35,21 @@ function readVotesSummary(projectRoot: string) {
 }
 
 const VALID_STATUSES = new Set<OrderStatus>(["pending", "confirmed", "fulfilled", "cancelled"]);
+const VALID_PAY_METHODS = new Set<PaymentMethod>(["paypal", "stripe", "cash"]);
+
+function paidRevenue(orders: { status: string; paymentStatus?: string; total: number }[]) {
+  return orders
+    .filter((o) => o.status !== "cancelled" && o.paymentStatus === "paid")
+    .reduce((s, o) => s + o.total, 0);
+}
 
 export function createAdminHandlers(projectRoot: string) {
   const auth = createAuthHandlers();
   const orders = createOrderHandlers(projectRoot);
+  const payments = createPaymentHandlers(projectRoot);
 
   return {
     handleAdminRequest: async (req: IncomingMessage, res: ServerResponse, pathname: string) => {
-      // Auth routes (no session required for login/session check)
       if (
         pathname === "/api/admin/session" ||
         pathname === "/api/admin/login" ||
@@ -55,9 +63,7 @@ export function createAdminHandlers(projectRoot: string) {
       if (pathname === "/api/admin/dashboard" && req.method === "GET") {
         const allOrders = orders.getAllOrders();
         const pending = allOrders.filter((o) => o.status === "pending").length;
-        const revenue = allOrders
-          .filter((o) => o.status !== "cancelled")
-          .reduce((s, o) => s + o.total, 0);
+        const revenue = paidRevenue(allOrders);
         const inventory = getAdminInventory(projectRoot);
         const lowStock = inventory.products.flatMap((p) =>
           p.sizes.filter((s) => s.quantity <= 3).map((s) => ({
@@ -76,7 +82,33 @@ export function createAdminHandlers(projectRoot: string) {
       }
 
       if (pathname === "/api/admin/orders" && req.method === "GET") {
-        return sendJson(res, 200, { orders: orders.getAllOrders() });
+        const sanitized = orders.getAllOrders().map(({ accessToken: _t, ...rest }) => rest);
+        return sendJson(res, 200, { orders: sanitized });
+      }
+
+      const payMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/mark-paid$/);
+      if (payMatch && req.method === "POST") {
+        let body: string;
+        try {
+          body = await readBody(req, 4_096);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        let method: PaymentMethod = "cash";
+        if (body.trim()) {
+          try {
+            const parsed = JSON.parse(body) as { paymentMethod?: string };
+            if (parsed.paymentMethod && VALID_PAY_METHODS.has(parsed.paymentMethod as PaymentMethod)) {
+              method = parsed.paymentMethod as PaymentMethod;
+            }
+          } catch {
+            return sendJson(res, 400, { error: "Ungültige Anfrage." });
+          }
+        }
+        const result = await payments.markOrderPaidByAdmin(decodeURIComponent(payMatch[1]), method);
+        if (!result.ok) return sendJson(res, 400, { error: result.error });
+        const { accessToken: _t, ...safe } = result.order;
+        return sendJson(res, 200, { order: safe });
       }
 
       const orderMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
@@ -96,9 +128,10 @@ export function createAdminHandlers(projectRoot: string) {
         if (!parsed.status || !VALID_STATUSES.has(parsed.status as OrderStatus)) {
           return sendJson(res, 400, { error: "Ungültiger Status." });
         }
-        const result = orders.updateOrderStatus(orderMatch[1], parsed.status as OrderStatus);
+        const result = await orders.updateOrderStatus(orderMatch[1], parsed.status as OrderStatus);
         if (!result.ok) return sendJson(res, 400, { error: result.error });
-        return sendJson(res, 200, { order: result.order });
+        const { accessToken: _t, ...safe } = result.order;
+        return sendJson(res, 200, { order: safe });
       }
 
       if (pathname === "/api/admin/inventory" && req.method === "GET") {

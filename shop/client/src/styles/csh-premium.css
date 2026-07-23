@@ -916,6 +916,26 @@
   gap: 1rem;
 }
 
+.csh-checkout__pay {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.csh-checkout__pay-block {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+}
+
+.csh-checkout__qr {
+  width: min(280px, 100%);
+  height: auto;
+  background: #fff;
+  padding: 0.75rem;
+  justify-self: start;
+}
+
 .product-page__size.is-disabled {
   opacity: 0.35;
   cursor: not-allowed;

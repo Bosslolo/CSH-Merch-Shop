@@ -16,6 +16,7 @@ import ProductPage from "./pages/ProductPage";
 import CollectionBigPage from "./pages/CollectionBigPage";
 import CollectionSmallPage from "./pages/CollectionSmallPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import PaymentReturnPage from "./pages/PaymentReturnPage";
 
 const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
 const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage"));
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/kollektion/klein" component={CollectionSmallPage} />
       <Route path="/produkt/:slug" component={ProductPage} />
       <Route path="/kasse" component={CheckoutPage} />
+      <Route path="/kasse/bezahlt" component={PaymentReturnPage} />
       <Route path="/verwaltung">
         <Suspense fallback={<AdminFallback />}>
           <AdminLoginPage />

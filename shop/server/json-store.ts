@@ -12,7 +12,9 @@ export function readJsonFile<T>(filePath: string, fallback: T): T {
     writeJsonFile(filePath, fallback);
     return fallback;
   }
-  return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
+  // Strip UTF-8 BOM if present (PowerShell Set-Content often adds it).
+  const raw = fs.readFileSync(filePath, "utf-8").replace(/^\uFEFF/, "");
+  return JSON.parse(raw) as T;
 }
 
 export function writeJsonFile<T>(filePath: string, data: T) {

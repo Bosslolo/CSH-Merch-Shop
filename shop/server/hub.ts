@@ -34,7 +34,7 @@ export function buildHubSnapshot(projectRoot: string): Record<string, unknown> {
   const allOrders = orders.getAllOrders();
   const pending = allOrders.filter((o) => o.status === "pending").length;
   const revenue = allOrders
-    .filter((o) => o.status !== "cancelled")
+    .filter((o) => o.status !== "cancelled" && o.paymentStatus === "paid")
     .reduce((s, o) => s + o.total, 0);
 
   const inventory = getAdminInventory(projectRoot);
