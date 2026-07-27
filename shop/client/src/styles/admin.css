@@ -954,6 +954,11 @@
   color: #fff;
 }
 
+.admin-status-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .admin-badge {
   display: inline-flex;
   align-items: center;

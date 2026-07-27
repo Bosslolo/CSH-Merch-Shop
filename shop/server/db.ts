@@ -587,6 +587,14 @@ export function dbUpdateOrder(root: string, order: Order) {
   db.transaction(() => updateOrderRow(db, order))();
 }
 
+export function dbDeleteOrder(root: string, orderId: string) {
+  const db = getDb(root);
+  db.transaction(() => {
+    db.prepare("DELETE FROM order_items WHERE order_id = ?").run(orderId);
+    db.prepare("DELETE FROM orders WHERE id = ?").run(orderId);
+  })();
+}
+
 export function dbWithShopTransaction<T>(root: string, fn: () => T): T {
   const db = getDb(root);
   return db.transaction(fn)();

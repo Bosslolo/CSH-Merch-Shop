@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminGuard } from "@/contexts/AdminContext";
 import {
+  deleteAdminOrder,
   fetchAdminOrders,
   markOrderPaid,
   resetOrderPayment,
@@ -62,15 +63,21 @@ export default function AdminOrdersPage() {
     if (!silent) setLoading(true);
     try {
       const data = await fetchAdminOrders();
-      setOrders(data.orders ?? []);
+      setOrders((data.orders ?? []) as Order[]);
       setError(null);
       setLastRefresh(new Date());
-    } catch {
-      if (!silent) setError("Bestellungen konnten nicht geladen werden.");
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Bestellungen konnten nicht geladen werden.";
+      setError(message);
     } finally {
       if (!silent) setLoading(false);
     }
   }, []);
+
+  function mergeOrderUpdate(next: Order) {
+    setOrders((prev) => prev.map((o) => (o.id === next.id ? { ...o, ...next } : o)));
+  }
 
   useEffect(() => {
     void load();
@@ -111,12 +118,43 @@ export default function AdminOrdersPage() {
     if (status === order.status) return;
     if (status === "cancelled") {
       if (!window.confirm(`Bestellung ${order.id} wirklich stornieren?`)) return;
+    } else if (order.status === "cancelled") {
+      if (
+        !window.confirm(
+          `Bestellung ${order.id} wieder aktivieren? Der Bestand wird erneut reserviert.`
+        )
+      ) {
+        return;
+      }
     }
     try {
-      await updateOrderStatus(order.id, status);
-      await load(true);
+      const data = await updateOrderStatus(order.id, status);
+      const updated = data.order as Order | undefined;
+      if (updated?.id) mergeOrderUpdate(updated);
+      else await load(true);
+      setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Status konnte nicht geändert werden.");
+    }
+  }
+
+  async function removeOrder(order: Order) {
+    if (order.status !== "cancelled") {
+      setError("Nur stornierte Bestellungen können gelöscht werden.");
+      return;
+    }
+    if (order.paymentStatus === "paid") {
+      setError("Bezahlte Bestellungen können nicht gelöscht werden.");
+      return;
+    }
+    if (!window.confirm(`Bestellung ${order.id} endgültig aus der Liste entfernen?`)) return;
+    try {
+      await deleteAdminOrder(order.id);
+      setOrders((prev) => prev.filter((o) => o.id !== order.id));
+      if (expanded === order.id) setExpanded(null);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Löschen fehlgeschlagen.");
     }
   }
 
@@ -135,10 +173,12 @@ export default function AdminOrdersPage() {
       return;
     }
     try {
-      await markOrderPaid(orderId, payMethod, { paymentReference: payRef.trim() });
+      const data = await markOrderPaid(orderId, payMethod, { paymentReference: payRef.trim() });
+      const updated = data.order as Order | undefined;
+      if (updated?.id) mergeOrderUpdate(updated);
       setPayFor(null);
       setPayRef("");
-      await load(true);
+      setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Zahlung konnte nicht markiert werden.");
     }
@@ -147,8 +187,10 @@ export default function AdminOrdersPage() {
   async function onResetPayment(orderId: string) {
     if (!window.confirm(`Zahlungsart für ${orderId} zurücksetzen?`)) return;
     try {
-      await resetOrderPayment(orderId);
-      await load(true);
+      const data = await resetOrderPayment(orderId);
+      const updated = data.order as Order | undefined;
+      if (updated?.id) mergeOrderUpdate(updated);
+      setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Zurücksetzen fehlgeschlagen.");
     }
@@ -272,7 +314,6 @@ export default function AdminOrdersPage() {
                                   className={`admin-status-btn${
                                     order.status === s.value ? " is-active" : ""
                                   }`}
-                                  disabled={order.status === "cancelled"}
                                   onClick={() => void setStatus(order, s.value)}
                                 >
                                   {s.label}
@@ -306,6 +347,16 @@ export default function AdminOrdersPage() {
                               </button>
                             ) : (
                               <span className="admin-muted">—</span>
+                            )}
+                            {order.status === "cancelled" && !paid && (
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--ghost-danger"
+                                style={{ marginTop: "0.35rem" }}
+                                onClick={() => void removeOrder(order)}
+                              >
+                                Löschen
+                              </button>
                             )}
                           </td>
                         </tr>
@@ -415,7 +466,6 @@ export default function AdminOrdersPage() {
                             className={`admin-status-btn${
                               order.status === s.value ? " is-active" : ""
                             }`}
-                            disabled={order.status === "cancelled"}
                             onClick={() => void setStatus(order, s.value)}
                           >
                             {s.label}
@@ -448,6 +498,16 @@ export default function AdminOrdersPage() {
                         </button>
                       )}
                       {payFor === order.id && renderPayPanel(order)}
+                      {order.status === "cancelled" && !paid && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--ghost-danger"
+                          style={{ marginTop: "0.5rem" }}
+                          onClick={() => void removeOrder(order)}
+                        >
+                          Bestellung löschen
+                        </button>
+                      )}
                     </article>
                   );
                 })}

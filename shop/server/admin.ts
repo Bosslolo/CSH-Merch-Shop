@@ -136,6 +136,32 @@ export function createAdminHandlers(projectRoot: string) {
         return sendJson(res, 200, { order: safe });
       }
 
+      const statusMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/status$/);
+      if (statusMatch && (req.method === "POST" || req.method === "PATCH")) {
+        let body: string;
+        try {
+          body = await readBody(req, 4_096);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        let parsed: { status?: string };
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        if (!parsed.status || !VALID_STATUSES.has(parsed.status as OrderStatus)) {
+          return sendJson(res, 400, { error: "Ungültiger Status." });
+        }
+        const result = await orders.updateOrderStatus(
+          decodeURIComponent(statusMatch[1]),
+          parsed.status as OrderStatus
+        );
+        if (!result.ok) return sendJson(res, 400, { error: result.error });
+        const { accessToken: _t, ...safe } = result.order;
+        return sendJson(res, 200, { order: safe });
+      }
+
       const orderMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
       if (orderMatch && req.method === "PATCH") {
         let body: string;
@@ -160,6 +186,12 @@ export function createAdminHandlers(projectRoot: string) {
         if (!result.ok) return sendJson(res, 400, { error: result.error });
         const { accessToken: _t, ...safe } = result.order;
         return sendJson(res, 200, { order: safe });
+      }
+
+      if (orderMatch && req.method === "DELETE") {
+        const result = await orders.deleteOrder(decodeURIComponent(orderMatch[1]));
+        if (!result.ok) return sendJson(res, 400, { error: result.error });
+        return sendJson(res, 200, { ok: true });
       }
 
       if (pathname === "/api/admin/inventory" && req.method === "GET") {

@@ -9,6 +9,7 @@ import {
   dbGetOrder,
   dbInsertOrder,
   dbListOrders,
+  dbDeleteOrder,
   dbUpdateOrder,
   dbWithShopTransaction,
   ensureShopDb,
@@ -317,6 +318,29 @@ export function createOrderHandlers(projectRoot: string) {
 
     archiveOldOrders(): number {
       return dbArchiveOldOrders(projectRoot);
+    },
+
+    async deleteOrder(
+      orderId: string
+    ): Promise<{ ok: true } | { ok: false; error: string }> {
+      return dbWithShopTransaction(projectRoot, () => {
+        const order = dbGetOrder(projectRoot, orderId);
+        if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
+        if (order.paymentStatus === "paid") {
+          return {
+            ok: false,
+            error: "Bezahlte Bestellungen können nicht gelöscht werden.",
+          };
+        }
+        if (order.status !== "cancelled") {
+          return {
+            ok: false,
+            error: "Nur stornierte Bestellungen können gelöscht werden.",
+          };
+        }
+        dbDeleteOrder(projectRoot, orderId);
+        return { ok: true };
+      });
     },
   };
 }

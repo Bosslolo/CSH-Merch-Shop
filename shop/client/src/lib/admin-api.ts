@@ -3,6 +3,30 @@ import type { CatalogFile, SiteSettings } from "@shared/shop-types";
 const adminFetch = (path: string, init?: RequestInit) =>
   fetch(path, { ...init, credentials: "include" });
 
+async function readAdminJson(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text.trim()) {
+    if (!res.ok) throw new Error(`Serverfehler (${res.status}).`);
+    return {};
+  }
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error(
+      res.ok ? "Ungültige Server-Antwort." : `Serverfehler (${res.status}).`
+    );
+  }
+}
+
+function adminError(res: Response, data: Record<string, unknown>, fallback: string): Error {
+  if (res.status === 401) {
+    return new Error(
+      typeof data.error === "string" ? data.error : "Sitzung abgelaufen. Bitte erneut anmelden."
+    );
+  }
+  return new Error(typeof data.error === "string" ? data.error : fallback);
+}
+
 export interface AdminSession {
   authenticated: boolean;
   configured: boolean;
@@ -39,18 +63,37 @@ export async function fetchDashboard() {
 
 export async function fetchAdminOrders() {
   const res = await adminFetch("/api/admin/orders");
-  if (!res.ok) throw new Error("Unauthorized");
-  return res.json();
+  const data = await readAdminJson(res);
+  if (!res.ok) throw adminError(res, data, "Bestellungen konnten nicht geladen werden.");
+  return data as { orders: unknown[] };
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
-    method: "PATCH",
+  const body = JSON.stringify({ status });
+  const path = `/api/admin/orders/${encodeURIComponent(orderId)}/status`;
+  let res = await adminFetch(path, {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
+    body,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? "Aktualisierung fehlgeschlagen.");
+  if (res.status === 404 || res.status === 405) {
+    res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+  }
+  const data = await readAdminJson(res);
+  if (!res.ok) throw adminError(res, data, "Aktualisierung fehlgeschlagen.");
+  return data;
+}
+
+export async function deleteAdminOrder(orderId: string) {
+  const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    method: "DELETE",
+  });
+  const data = await readAdminJson(res);
+  if (!res.ok) throw adminError(res, data, "Löschen fehlgeschlagen.");
   return data;
 }
 
@@ -68,8 +111,8 @@ export async function markOrderPaid(
       paymentReference: opts.paymentReference || undefined,
     }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? "Zahlung konnte nicht markiert werden.");
+  const data = await readAdminJson(res);
+  if (!res.ok) throw adminError(res, data, "Zahlung konnte nicht markiert werden.");
   return data;
 }
 
@@ -77,8 +120,8 @@ export async function resetOrderPayment(orderId: string) {
   const res = await adminFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/reset-payment`, {
     method: "POST",
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? "Zahlung konnte nicht zurückgesetzt werden.");
+  const data = await readAdminJson(res);
+  if (!res.ok) throw adminError(res, data, "Zahlung konnte nicht zurückgesetzt werden.");
   return data;
 }
 
