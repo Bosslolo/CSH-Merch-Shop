@@ -47,7 +47,9 @@ if (-not (Test-Path -LiteralPath $sharedPayments)) {
 }
 $envFile = Join-Path $ProjectRoot "config\production.env"
 $allowedKeys = @(
-    "ADMIN_PASSWORD", "ADMIN_SESSION_SECRET",
+    "ADMIN_PASSWORD", "ADMIN_SESSION_SECRET", "ADMIN_COOKIE_SECURE",
+    "VOTING_ENABLED", "TRUST_PROXY", "ORDER_UNPAID_TTL_MINUTES",
+    "CSH_REQUIRE_PUBLIC_URL",
     "HUB_API_KEY", "HUB_PUSH_URL", "HUB_PUSH_URLS", "HUB_PUSH_ENABLED", "HUB_PUSH_INTERVAL_SECONDS",
     "HUB_PUSH_MODE", "HUB_PUSH_LOCAL_HOST", "HUB_PUSH_LOCAL_PORT",
     "PORT",
@@ -126,7 +128,8 @@ Start-Sleep -Seconds 3
 
 Write-Host ""
 Write-Host "Shop:  http://localhost:$port" -ForegroundColor White
-Write-Host "Public: https://shop.icicles.online" -ForegroundColor White
+Write-Host "Public: https://shop.cs-bodensee.de" -ForegroundColor White
+Write-Host "Alt:    https://shop.icicles.online" -ForegroundColor DarkGray
 Write-Host "Admin: http://localhost:$port/verwaltung" -ForegroundColor White
 Write-Host "Logs:  $logOut" -ForegroundColor DarkGray
 Write-Host "Stop:  .\scripts\ops\stop_app.ps1" -ForegroundColor Yellow
