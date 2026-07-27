@@ -1,13 +1,23 @@
-import path from "node:path";
 import { randomBytes } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { CreateOrderPayload, Order, OrdersFile, OrderStatus } from "../shared/shop-types.js";
+import type { CreateOrderPayload, Order, OrderStatus } from "../shared/shop-types.js";
 import { getClientIp } from "./client-ip.js";
 import { getCatalogProduct } from "./catalog.js";
-import { withFileLock } from "./file-lock.js";
-import { adjustStockUnlocked, shopDataLockKey } from "./inventory.js";
-import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
+import {
+  dbArchiveOldOrders,
+  dbCountOpenUnpaidByEmail,
+  dbGetOrder,
+  dbInsertOrder,
+  dbListOrders,
+  dbUpdateOrder,
+  dbWithShopTransaction,
+  ensureShopDb,
+  startOrderArchiveCleanup,
+} from "./db.js";
+import { adjustStockUnlocked } from "./inventory.js";
+import { readBody } from "./json-store.js";
 import { isRateLimited, recordAttempt } from "./rate-limit.js";
+import { applySaleToProduct, loadSiteSettings } from "./site-settings.js";
 
 const MAX_LINE_ITEMS = 20;
 const MAX_QTY_PER_LINE = 10;
@@ -22,18 +32,6 @@ const UNPAID_TTL_MS = Math.max(
   15 * 60 * 1000,
   Number(process.env.ORDER_UNPAID_TTL_MINUTES || 120) * 60 * 1000
 );
-
-function ordersPath(root: string) {
-  return path.join(root, "data", "orders.json");
-}
-
-function loadOrders(root: string): OrdersFile {
-  return readJsonFile(ordersPath(root), { orders: [] });
-}
-
-function saveOrders(root: string, data: OrdersFile) {
-  writeJsonFile(ordersPath(root), data);
-}
 
 function newOrderId(): string {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -94,7 +92,7 @@ function mergeItems(
     if (nextQty > MAX_QTY_PER_VARIANT) {
       return {
         ok: false,
-        error: `Maximal ${MAX_QTY_PER_VARIANT} Stück pro Groesse/Artikel.`,
+        error: `Maximal ${MAX_QTY_PER_VARIANT} Stück pro Größe/Artikel.`,
       };
     }
     map.set(key, { slug, size, quantity: nextQty });
@@ -103,10 +101,9 @@ function mergeItems(
 }
 
 function expireUnpaidLocked(root: string): number {
-  const data = loadOrders(root);
   const now = Date.now();
   let expired = 0;
-  for (const order of data.orders) {
+  for (const order of dbListOrders(root)) {
     if (order.status !== "pending") continue;
     if (order.paymentStatus === "paid") continue;
     const created = Date.parse(order.createdAt);
@@ -125,13 +122,15 @@ function expireUnpaidLocked(root: string): number {
     order.status = "cancelled";
     order.updatedAt = new Date().toISOString();
     order.paymentStatus = order.paymentStatus === "pending" ? "unpaid" : order.paymentStatus;
+    dbUpdateOrder(root, order);
     expired += 1;
   }
-  if (expired > 0) saveOrders(root, data);
   return expired;
 }
 
 export function createOrderHandlers(projectRoot: string) {
+  ensureShopDb(projectRoot);
+
   return {
     async handleCreateOrder(req: IncomingMessage, res: ServerResponse) {
       if (req.method !== "POST") {
@@ -171,23 +170,28 @@ export function createOrderHandlers(projectRoot: string) {
       const merged = mergeItems(parsed.items);
       if (!merged.ok) return sendJson(res, 400, { error: merged.error });
 
+      const sales = loadSiteSettings(projectRoot).sales;
       const lineItems: Order["items"] = [];
       const stockDeltas: { slug: string; size: string; delta: number }[] = [];
 
       for (const item of merged.merged) {
-        const product = getCatalogProduct(item.slug);
+        const product = getCatalogProduct(projectRoot, item.slug);
         if (!product) {
           return sendJson(res, 400, { error: `Unbekanntes Produkt: ${item.slug}` });
         }
-        if (!product.sizes.includes(item.size as (typeof product.sizes)[number])) {
-          return sendJson(res, 400, { error: `Ungültige Groesse für ${product.name}.` });
+        if (product.soldOut) {
+          return sendJson(res, 409, { error: `${product.name} ist aktuell ausverkauft.` });
         }
+        if (!product.sizes.includes(item.size as (typeof product.sizes)[number])) {
+          return sendJson(res, 400, { error: `Ungültige Größe für ${product.name}.` });
+        }
+        const priced = applySaleToProduct(product, sales);
         lineItems.push({
           slug: product.slug,
           productName: product.name,
           size: item.size,
           quantity: item.quantity,
-          unitPrice: product.price,
+          unitPrice: priced.price,
         });
         stockDeltas.push({ slug: product.slug, size: item.size, delta: -item.quantity });
       }
@@ -213,17 +217,10 @@ export function createOrderHandlers(projectRoot: string) {
       };
 
       try {
-        await withFileLock(shopDataLockKey(projectRoot), () => {
+        dbWithShopTransaction(projectRoot, () => {
           expireUnpaidLocked(projectRoot);
 
-          const data = loadOrders(projectRoot);
-          const openUnpaid = data.orders.filter(
-            (o) =>
-              o.customer.email === email &&
-              o.status === "pending" &&
-              o.paymentStatus !== "paid"
-          ).length;
-          if (openUnpaid >= MAX_OPEN_UNPAID_PER_EMAIL) {
+          if (dbCountOpenUnpaidByEmail(projectRoot, email) >= MAX_OPEN_UNPAID_PER_EMAIL) {
             throw new Error("TOO_MANY_OPEN");
           }
 
@@ -232,8 +229,7 @@ export function createOrderHandlers(projectRoot: string) {
             throw new Error(`STOCK:${stockResult.error}`);
           }
 
-          data.orders.unshift(order);
-          saveOrders(projectRoot, data);
+          dbInsertOrder(projectRoot, order);
         });
       } catch (err) {
         if (err instanceof Error) {
@@ -262,16 +258,19 @@ export function createOrderHandlers(projectRoot: string) {
     },
 
     getAllOrders(root: string = projectRoot): Order[] {
-      return loadOrders(root).orders;
+      return dbListOrders(root);
+    },
+
+    getOrder(orderId: string): Order | undefined {
+      return dbGetOrder(projectRoot, orderId);
     },
 
     async updateOrderStatus(
       orderId: string,
       status: OrderStatus
     ): Promise<{ ok: true; order: Order } | { ok: false; error: string }> {
-      return withFileLock(shopDataLockKey(projectRoot), () => {
-        const data = loadOrders(projectRoot);
-        const order = data.orders.find((o) => o.id === orderId);
+      return dbWithShopTransaction(projectRoot, () => {
+        const order = dbGetOrder(projectRoot, orderId);
         if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
 
         const prev = order.status;
@@ -306,14 +305,18 @@ export function createOrderHandlers(projectRoot: string) {
 
         order.status = status;
         order.updatedAt = new Date().toISOString();
-        saveOrders(projectRoot, data);
+        dbUpdateOrder(projectRoot, order);
         return { ok: true, order };
       });
     },
 
     /** Cancel unpaid pending orders older than TTL and restore stock. */
     async expireUnpaidOrders(): Promise<number> {
-      return withFileLock(shopDataLockKey(projectRoot), () => expireUnpaidLocked(projectRoot));
+      return dbWithShopTransaction(projectRoot, () => expireUnpaidLocked(projectRoot));
+    },
+
+    archiveOldOrders(): number {
+      return dbArchiveOldOrders(projectRoot);
     },
   };
 }
@@ -334,3 +337,5 @@ export function startUnpaidOrderCleanup(
   const timer = setInterval(() => void tick(), intervalMs);
   timer.unref?.();
 }
+
+export { startOrderArchiveCleanup };

@@ -1,9 +1,14 @@
 import { createHash } from "node:crypto";
-import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getClientIp } from "./client-ip.js";
-import { withFileLock } from "./file-lock.js";
-import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
+import {
+  dbFindVote,
+  dbInsertVote,
+  dbListVotes,
+  ensureShopDb,
+  type VoteRecord,
+} from "./db.js";
+import { readBody } from "./json-store.js";
 import { hitRateLimit } from "./rate-limit.js";
 
 export const DROP_ID = "drop-2026-spring";
@@ -12,33 +17,9 @@ const VALID_DESIGNS = new Set(["building-print", "crest-logo", "community-tees"]
 const VOTE_RATE_MAX = 20;
 const VOTE_RATE_WINDOW_MS = 15 * 60 * 1000;
 
-interface VoteRecord {
-  dropId: string;
-  designId: string;
-  fingerprintHash: string;
-  ip: string;
-  votedAt: string;
-}
-
-interface VotesFile {
-  records: VoteRecord[];
-}
-
 function votingEnabled(): boolean {
   const v = (process.env.VOTING_ENABLED ?? "false").toLowerCase();
   return v === "1" || v === "true" || v === "yes";
-}
-
-function dataPath(root: string) {
-  return path.join(root, "data", "votes.json");
-}
-
-function readVotes(filePath: string): VotesFile {
-  return readJsonFile(filePath, { records: [] } satisfies VotesFile);
-}
-
-function writeVotes(filePath: string, data: VotesFile) {
-  writeJsonFile(filePath, data);
 }
 
 function hashFingerprint(fingerprint: string, ip: string) {
@@ -61,14 +42,6 @@ function buildTallies(records: VoteRecord[]) {
   return tallies;
 }
 
-function findExistingVote(records: VoteRecord[], fpHash: string, cookie: string | null) {
-  const dropRecords = records.filter((r) => r.dropId === DROP_ID);
-  return (
-    dropRecords.find((r) => r.fingerprintHash === fpHash) ??
-    (cookie ? dropRecords.find((r) => r.fingerprintHash === cookie) : undefined)
-  );
-}
-
 function parseFingerprintQuery(req: IncomingMessage): string | null {
   const raw = req.url ?? "";
   const qIndex = raw.indexOf("?");
@@ -78,7 +51,7 @@ function parseFingerprintQuery(req: IncomingMessage): string | null {
 }
 
 export function createVoteHandlers(projectRoot: string) {
-  const filePath = dataPath(projectRoot);
+  ensureShopDb(projectRoot);
 
   function sendJson(res: ServerResponse, status: number, body: unknown) {
     res.writeHead(status, { "Content-Type": "application/json" });
@@ -87,19 +60,18 @@ export function createVoteHandlers(projectRoot: string) {
 
   async function handleGet(req: IncomingMessage, res: ServerResponse) {
     const enabled = votingEnabled();
-    const data = await withFileLock(filePath, () => readVotes(filePath));
+    const records = dbListVotes(projectRoot);
     const cookie = parseCookie(req, VOTE_COOKIE);
     const fingerprint = parseFingerprintQuery(req);
     const ip = getClientIp(req);
     const fpHash = fingerprint ? hashFingerprint(fingerprint, ip) : null;
-    const dropRecords = data.records.filter((r) => r.dropId === DROP_ID);
     const existing =
-      (fpHash ? dropRecords.find((r) => r.fingerprintHash === fpHash) : undefined) ??
-      (cookie ? dropRecords.find((r) => r.fingerprintHash === cookie) : undefined);
+      (fpHash ? dbFindVote(projectRoot, DROP_ID, fpHash, cookie) : undefined) ??
+      (cookie ? dbFindVote(projectRoot, DROP_ID, cookie, null) : undefined);
 
     sendJson(res, 200, {
       enabled,
-      tallies: buildTallies(data.records),
+      tallies: buildTallies(records),
       hasVoted: Boolean(existing),
       votedDesignId: existing?.designId ?? null,
     });
@@ -150,57 +122,43 @@ export function createVoteHandlers(projectRoot: string) {
 
     const fpHash = hashFingerprint(fingerprint, ip);
     const cookie = parseCookie(req, VOTE_COOKIE);
-
-    try {
-      const result = await withFileLock(filePath, () => {
-        const data = readVotes(filePath);
-        const existing = findExistingVote(data.records, fpHash, cookie);
-        if (existing) {
-          return {
-            conflict: true as const,
-            existing,
-            tallies: buildTallies(data.records),
-          };
-        }
-
-        data.records.push({
-          dropId: DROP_ID,
-          designId,
-          fingerprintHash: fpHash,
-          ip,
-          votedAt: new Date().toISOString(),
-        });
-        writeVotes(filePath, data);
-        return {
-          conflict: false as const,
-          tallies: buildTallies(data.records),
-          designId,
-        };
-      });
-
-      if (result.conflict) {
-        return sendJson(res, 409, {
-          error: "Du hast bereits abgestimmt.",
-          hasVoted: true,
-          votedDesignId: result.existing.designId,
-          tallies: result.tallies,
-        });
-      }
-
-      res.setHeader(
-        "Set-Cookie",
-        `${VOTE_COOKIE}=${fpHash}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`
-      );
-
-      return sendJson(res, 200, {
-        tallies: result.tallies,
+    const existing = dbFindVote(projectRoot, DROP_ID, fpHash, cookie);
+    if (existing) {
+      return sendJson(res, 409, {
+        error: "Du hast bereits abgestimmt.",
         hasVoted: true,
-        votedDesignId: result.designId,
+        votedDesignId: existing.designId,
+        tallies: buildTallies(dbListVotes(projectRoot)),
       });
-    } catch (err) {
-      console.error("[votes] write failed", err);
-      return sendJson(res, 500, { error: "Stimme konnte nicht gespeichert werden." });
     }
+
+    const inserted = dbInsertVote(projectRoot, {
+      dropId: DROP_ID,
+      designId,
+      fingerprintHash: fpHash,
+      ip,
+      votedAt: new Date().toISOString(),
+    });
+    if (!inserted) {
+      const again = dbFindVote(projectRoot, DROP_ID, fpHash, cookie);
+      return sendJson(res, 409, {
+        error: "Du hast bereits abgestimmt.",
+        hasVoted: true,
+        votedDesignId: again?.designId ?? designId,
+        tallies: buildTallies(dbListVotes(projectRoot)),
+      });
+    }
+
+    res.setHeader(
+      "Set-Cookie",
+      `${VOTE_COOKIE}=${fpHash}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`
+    );
+
+    return sendJson(res, 200, {
+      tallies: buildTallies(dbListVotes(projectRoot)),
+      hasVoted: true,
+      votedDesignId: designId,
+    });
   }
 
   return {

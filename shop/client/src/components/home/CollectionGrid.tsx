@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { catalog } from "@/assets/images";
-import { PRODUCTS } from "@/data/products";
+import type { CatalogProduct } from "@shared/shop-types";
 import { containerStagger, fadeUp, transition } from "@/lib/motion";
 import { scrollToTop } from "@/lib/scroll";
 
@@ -9,26 +9,32 @@ function formatPrice(n: number) {
   return `${n} €`;
 }
 
-const GROUPS = [
-  { id: "hoodies", label: "Hoodies", filter: (slug: string) => slug.includes("hoodie") },
-  { id: "tshirts", label: "T-Shirts", filter: (slug: string) => slug.includes("t-shirt") },
-] as const;
-
 function scrollToGroup(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-export default function CollectionGrid() {
-  const groups = GROUPS.map((g) => ({
-    ...g,
-    products: PRODUCTS.filter((p) => g.filter(p.slug)),
-  }));
+export default function CollectionGrid({ products, title = "Kollektion" }: { products: CatalogProduct[]; title?: string }) {
+  const groups = Array.from(
+    products.reduce((map, product) => {
+      const existing = map.get(product.groupKey);
+      if (existing) {
+        existing.products.push(product);
+      } else {
+        map.set(product.groupKey, {
+          id: product.groupKey,
+          label: product.groupLabel,
+          products: [product],
+        });
+      }
+      return map;
+    }, new Map<string, { id: string; label: string; products: CatalogProduct[] }>())
+  ).map(([, group]) => group);
 
   return (
     <div className="csh-collection">
       <div className="csh-collection__header">
-        <h2 className="csh-collection__title">Kollektion</h2>
-        <span className="csh-collection__filter">Letzte Auflage · {PRODUCTS.length} Artikel</span>
+        <h2 className="csh-collection__title">{title}</h2>
+        <span className="csh-collection__filter">{products.length} Artikel</span>
       </div>
 
       <nav className="csh-collection__chips" aria-label="Produktgruppen">
@@ -45,7 +51,7 @@ export default function CollectionGrid() {
         ))}
       </nav>
 
-      <p className="csh-collection__hint">Hoodies und T-Shirts — tippe oben, um zu springen.</p>
+      <p className="csh-collection__hint">Nach Produktgruppe sortiert – tippe oben, um zu springen.</p>
 
       {groups.map((g) => (
         <section key={g.id} id={g.id} className="csh-collection__group">
@@ -60,7 +66,7 @@ export default function CollectionGrid() {
   );
 }
 
-function ProductRow({ products }: { products: typeof PRODUCTS }) {
+function ProductRow({ products }: { products: CatalogProduct[] }) {
   return (
     <motion.div
       className="csh-collection__grid"
@@ -73,12 +79,16 @@ function ProductRow({ products }: { products: typeof PRODUCTS }) {
         <motion.article key={product.slug} variants={fadeUp} transition={transition}>
           <Link href={`/produkt/${product.slug}`} className="csh-product-card" onClick={() => scrollToTop()}>
             <div className="csh-product-card__media">
+              {product.soldOut && <span className="csh-product-card__badge">Ausverkauft</span>}
               <img src={product.flatLay} alt={product.name} loading="lazy" />
             </div>
             <div className="csh-product-card__info">
               <p className="csh-product-card__name">{product.name}</p>
               <p className="csh-product-card__price">
-                {product.compareAt && <s>{formatPrice(product.compareAt)}</s>}
+                {product.onSale && <span className="product-page__sale-badge">−{product.salePercent}%</span>}
+                {product.compareAt && product.compareAt > product.price && (
+                  <s>{formatPrice(product.compareAt)}</s>
+                )}
                 {formatPrice(product.price)}
               </p>
               <div className="csh-swatches">

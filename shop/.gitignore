@@ -104,9 +104,15 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+data/shop.db
+data/shop.db-*
+data/*.json.migrated.*.bak
 data/votes.json
 data/orders.json
 data/inventory.json
+data/catalog.json
+client/public/images/uploads/*
+!client/public/images/uploads/.gitkeep
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/

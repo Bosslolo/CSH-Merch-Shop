@@ -1,3 +1,5 @@
+import type { CatalogFile, SiteSettings } from "@shared/shop-types";
+
 const adminFetch = (path: string, init?: RequestInit) =>
   fetch(path, { ...init, credentials: "include" });
 
@@ -11,11 +13,14 @@ export async function getAdminSession(): Promise<AdminSession> {
   return res.json();
 }
 
-export async function adminLogin(password: string): Promise<{ ok?: boolean; error?: string }> {
+export async function adminLogin(
+  password: string,
+  rememberDevice = false
+): Promise<{ ok?: boolean; error?: string }> {
   const res = await adminFetch("/api/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, rememberDevice }),
   });
   const data = await res.json();
   if (!res.ok) return { error: data.error ?? "Anmeldung fehlgeschlagen." };
@@ -83,6 +88,24 @@ export async function fetchAdminInventory() {
   return res.json();
 }
 
+export async function fetchAdminCatalog(): Promise<CatalogFile> {
+  const res = await adminFetch("/api/admin/catalog");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Katalog konnte nicht geladen werden.");
+  return data;
+}
+
+export async function saveAdminCatalog(catalog: CatalogFile): Promise<CatalogFile> {
+  const res = await adminFetch("/api/admin/catalog", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(catalog),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Katalog konnte nicht gespeichert werden.");
+  return data;
+}
+
 export async function saveInventoryUpdates(updates: { slug: string; size: string; quantity: number }[]) {
   const res = await adminFetch("/api/admin/inventory", {
     method: "PUT",
@@ -98,4 +121,53 @@ export async function fetchAdminVotes() {
   const res = await adminFetch("/api/admin/votes");
   if (!res.ok) throw new Error("Unauthorized");
   return res.json();
+}
+
+export async function fetchPublicCatalog(): Promise<CatalogFile> {
+  const res = await fetch("/api/catalog");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Katalog konnte nicht geladen werden.");
+  return data;
+}
+
+export async function fetchSiteSettings(): Promise<SiteSettings> {
+  const res = await fetch("/api/site-settings");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Einstellungen konnten nicht geladen werden.");
+  return data;
+}
+
+export async function fetchAdminSettings(): Promise<SiteSettings> {
+  const res = await adminFetch("/api/admin/settings");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Einstellungen konnten nicht geladen werden.");
+  return data;
+}
+
+export async function saveAdminSettings(settings: SiteSettings): Promise<SiteSettings> {
+  const res = await adminFetch("/api/admin/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Einstellungen konnten nicht gespeichert werden.");
+  return data;
+}
+
+export async function uploadAdminImage(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden."));
+    reader.readAsDataURL(file);
+  });
+  const res = await adminFetch("/api/admin/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dataUrl, filename: file.name }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Upload fehlgeschlagen.");
+  return data.url as string;
 }

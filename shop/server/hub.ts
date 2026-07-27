@@ -1,10 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import path from "node:path";
 import { DROP_ID } from "./votes.js";
 import { getAdminInventory } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
-import { readJsonFile } from "./json-store.js";
+import { dbListVotes, ensureShopDb } from "./db.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -18,17 +17,14 @@ function getBearerToken(req: IncomingMessage): string | null {
 }
 
 function readVotesSummary(projectRoot: string) {
-  const filePath = path.join(projectRoot, "data", "votes.json");
-  const data = readJsonFile<{ records: { dropId: string; designId: string }[] }>(filePath, {
-    records: [],
-  });
-  const dropRecords = data.records.filter((r) => r.dropId === DROP_ID);
+  const dropRecords = dbListVotes(projectRoot, DROP_ID);
   const tallies: Record<string, number> = {};
   for (const r of dropRecords) tallies[r.designId] = (tallies[r.designId] ?? 0) + 1;
   return { total: dropRecords.length, tallies };
 }
 
 export function buildHubSnapshot(projectRoot: string): Record<string, unknown> {
+  ensureShopDb(projectRoot);
   const orders = createOrderHandlers(projectRoot);
   const allOrders = orders.getAllOrders();
   const pending = allOrders.filter((o) => o.status === "pending").length;
@@ -64,6 +60,7 @@ export function buildHubSnapshot(projectRoot: string): Record<string, unknown> {
 }
 
 export function createHubHandlers(projectRoot: string) {
+  ensureShopDb(projectRoot);
   return {
     handleHubRequest(req: IncomingMessage, res: ServerResponse) {
       if (req.method !== "GET") {

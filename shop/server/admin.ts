@@ -1,12 +1,15 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { OrderStatus, PaymentMethod } from "../shared/shop-types.js";
+import type { CatalogFile, OrderStatus, PaymentMethod, SiteSettings } from "../shared/shop-types.js";
 import { createAuthHandlers } from "./auth.js";
+import { loadCatalog, saveCatalog } from "./catalog.js";
+import { dbListVotes, ensureShopDb } from "./db.js";
 import { getAdminInventory, setStockLevels } from "./inventory.js";
 import { createOrderHandlers } from "./orders.js";
 import { createPaymentHandlers } from "./payments.js";
-import { readBody, readJsonFile } from "./json-store.js";
+import { readBody } from "./json-store.js";
+import { loadSiteSettings, saveSiteSettings } from "./site-settings.js";
+import { handleAdminUpload } from "./upload.js";
 import { DROP_ID } from "./votes.js";
-import path from "node:path";
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -14,12 +17,7 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 }
 
 function readVotesSummary(projectRoot: string) {
-  const filePath = path.join(projectRoot, "data", "votes.json");
-  const data = readJsonFile<{ records: { dropId: string; designId: string; votedAt: string }[] }>(
-    filePath,
-    { records: [] }
-  );
-  const dropRecords = data.records.filter((r) => r.dropId === DROP_ID);
+  const dropRecords = dbListVotes(projectRoot, DROP_ID);
   const tallies: Record<string, number> = {};
   for (const r of dropRecords) {
     tallies[r.designId] = (tallies[r.designId] ?? 0) + 1;
@@ -41,6 +39,7 @@ function paidRevenue(orders: { status: string; paymentStatus?: string; total: nu
 }
 
 export function createAdminHandlers(projectRoot: string) {
+  ensureShopDb(projectRoot);
   const auth = createAuthHandlers();
   const orders = createOrderHandlers(projectRoot);
   const payments = createPaymentHandlers(projectRoot);
@@ -71,10 +70,20 @@ export function createAdminHandlers(projectRoot: string) {
           }))
         );
         const votes = readVotesSummary(projectRoot);
+        const votingEnabled =
+          process.env.VOTING_ENABLED === "1" ||
+          process.env.VOTING_ENABLED === "true" ||
+          process.env.VOTING_ENABLED === "yes";
         return sendJson(res, 200, {
           orders: { total: allOrders.length, pending, revenue },
+          unpaid: allOrders.filter(
+            (o) => o.status !== "cancelled" && o.paymentStatus !== "paid"
+          ).length,
+          ready: allOrders.filter((o) => o.status === "confirmed" && o.paymentStatus === "paid")
+            .length,
           lowStock,
           votes,
+          votingEnabled,
         });
       }
 
@@ -157,6 +166,10 @@ export function createAdminHandlers(projectRoot: string) {
         return sendJson(res, 200, getAdminInventory(projectRoot));
       }
 
+      if (pathname === "/api/admin/catalog" && req.method === "GET") {
+        return sendJson(res, 200, loadCatalog(projectRoot));
+      }
+
       if (pathname === "/api/admin/inventory" && req.method === "PUT") {
         let body: string;
         try {
@@ -178,8 +191,50 @@ export function createAdminHandlers(projectRoot: string) {
         return sendJson(res, 200, getAdminInventory(projectRoot));
       }
 
+      if (pathname === "/api/admin/catalog" && req.method === "PUT") {
+        let body: string;
+        try {
+          body = await readBody(req, 200_000);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        let parsed: CatalogFile;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        const result = saveCatalog(projectRoot, parsed);
+        if (!result.ok) return sendJson(res, 400, { error: result.error });
+        return sendJson(res, 200, result.data);
+      }
+
       if (pathname === "/api/admin/votes" && req.method === "GET") {
         return sendJson(res, 200, readVotesSummary(projectRoot));
+      }
+
+      if (pathname === "/api/admin/settings" && req.method === "GET") {
+        return sendJson(res, 200, loadSiteSettings(projectRoot));
+      }
+
+      if (pathname === "/api/admin/settings" && req.method === "PUT") {
+        let body: string;
+        try {
+          body = await readBody(req, 100_000);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        let parsed: SiteSettings;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          return sendJson(res, 400, { error: "Ungültige Anfrage." });
+        }
+        return sendJson(res, 200, saveSiteSettings(projectRoot, parsed));
+      }
+
+      if (pathname === "/api/admin/upload" && req.method === "POST") {
+        return handleAdminUpload(projectRoot, req, res);
       }
 
       sendJson(res, 404, { error: "Not found" });

@@ -2,7 +2,7 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import PremiumStage from "@/components/home/PremiumStage";
 import CollectionEntryCards from "@/components/home/CollectionEntryCards";
-import DropVoteSection from "@/components/home/DropVoteSection";
+import SpotlightSection from "@/components/home/SpotlightSection";
 import MarqueeTicker from "@/components/MarqueeTicker";
 import LogoSplash from "@/components/intro/LogoSplash";
 import { motion } from "framer-motion";
@@ -31,13 +31,11 @@ export default function Home() {
           <div className="csh-editorial__text">
             <p className="csh-label">Gemeinschaft</p>
             <h2 className="csh-serif">Von KiTa bis Oberstufe.</h2>
-            <p className="csh-body">
-              Ein Shop für alle an der Christlichen Schule im Hegau.
-            </p>
+            <p className="csh-body">Ein Shop für alle an der Christlichen Schule im Hegau.</p>
           </div>
         </motion.section>
 
-        <DropVoteSection />
+        <SpotlightSection />
         <CollectionEntryCards />
       </main>
       <SiteFooter />

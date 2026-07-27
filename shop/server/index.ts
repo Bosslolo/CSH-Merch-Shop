@@ -3,13 +3,17 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createAdminHandlers } from "./admin.js";
+import { loadCatalog } from "./catalog.js";
+import { ensureShopDb, startOrderArchiveCleanup } from "./db.js";
 import { buildHubSnapshot, createHubHandlers } from "./hub.js";
 import { startHubPush } from "./hub-push.js";
+import { sendJsonCached } from "./http-cache.js";
 import { createInventoryHandlers } from "./inventory.js";
 import { createOrderHandlers, startUnpaidOrderCleanup } from "./orders.js";
 import { createPaymentHandlers } from "./payments.js";
 import { loadMerchEnv } from "./payments-config.js";
 import { handleQrImage } from "./qr.js";
+import { applySalesToCatalogProducts, loadSiteSettings } from "./site-settings.js";
 import { createVoteHandlers } from "./votes.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +26,8 @@ async function startServer() {
   if (loadedEnv.length) {
     console.log("Loaded env:", loadedEnv.join(" | "));
   }
+
+  ensureShopDb(shopRoot);
 
   const app = express();
   const server = createServer(app);
@@ -40,6 +46,26 @@ async function startServer() {
 
   app.use("/api/stock", (req, res) => {
     handlePublicStockRequest(req, res);
+  });
+
+  app.get("/api/catalog", (req, res) => {
+    const data = loadCatalog(shopRoot);
+    const settings = loadSiteSettings(shopRoot);
+    const products = applySalesToCatalogProducts(
+      data.products.filter((product) => product.active !== false),
+      settings.sales
+    );
+    const body = {
+      collections: data.collections,
+      products,
+      updatedAt: data.updatedAt,
+    };
+    sendJsonCached(req, res, 200, body, `${data.updatedAt}|${settings.updatedAt}`);
+  });
+
+  app.get("/api/site-settings", (req, res) => {
+    const settings = loadSiteSettings(shopRoot);
+    sendJsonCached(req, res, 200, settings, settings.updatedAt, 15);
   });
 
   app.post("/api/orders", (req, res) => {
@@ -98,6 +124,7 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    console.log(`SQLite store: ${path.join(shopRoot, "data", "shop.db")}`);
     if (!process.env.ADMIN_PASSWORD) {
       console.warn("WARN: ADMIN_PASSWORD not set — admin login disabled.");
     }
@@ -117,6 +144,7 @@ async function startServer() {
       console.warn("WARN: STRIPE_SECRET_KEY missing — Stripe checkout disabled.");
     }
     startUnpaidOrderCleanup(() => orderHandlers.expireUnpaidOrders());
+    startOrderArchiveCleanup(() => orderHandlers.archiveOldOrders());
     startHubPush(() => buildHubSnapshot(shopRoot), "csh-merch");
   });
 }

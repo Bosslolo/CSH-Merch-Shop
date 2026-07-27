@@ -6,7 +6,9 @@ import { isRateLimited, recordAttempt } from "./rate-limit.js";
 import { readBody } from "./json-store.js";
 
 const ADMIN_COOKIE = "csh_admin_session";
+const REMEMBER_COOKIE = "csh_admin_device";
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+const REMEMBER_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_ATTEMPTS = 8;
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -26,23 +28,40 @@ function signPayload(payload: string): string {
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
-function createSessionToken(): string | null {
+function userAgentFingerprint(req: IncomingMessage): string {
+  return createHmac("sha256", getSessionSecret() || "csh-admin")
+    .update(req.headers["user-agent"] ?? "unknown")
+    .digest("hex")
+    .slice(0, 24);
+}
+
+function createToken(expMs: number, scope: string, device: string): string | null {
   const secret = getSessionSecret();
   if (!secret) return null;
-  const exp = Date.now() + SESSION_TTL_MS;
+  const exp = Date.now() + expMs;
   const nonce = randomBytes(16).toString("hex");
-  const payload = `${exp}.${nonce}`;
+  const payload = `${scope}.${exp}.${device}.${nonce}`;
   const sig = signPayload(payload);
   return `${payload}.${sig}`;
 }
 
-function verifySessionToken(token: string): boolean {
+function createSessionToken(req: IncomingMessage): string | null {
+  return createToken(SESSION_TTL_MS, "session", userAgentFingerprint(req));
+}
+
+function createRememberToken(req: IncomingMessage): string | null {
+  return createToken(REMEMBER_TTL_MS, "remember", userAgentFingerprint(req));
+}
+
+function verifyToken(token: string, req: IncomingMessage, scope: "session" | "remember"): boolean {
   const parts = token.split(".");
-  if (parts.length !== 3) return false;
-  const [expStr, nonce, sig] = parts;
+  if (parts.length !== 5) return false;
+  const [tokenScope, expStr, device, nonce, sig] = parts;
+  if (tokenScope !== scope) return false;
+  if (device !== userAgentFingerprint(req)) return false;
   const exp = Number(expStr);
   if (!Number.isFinite(exp) || exp < Date.now()) return false;
-  const expected = signPayload(`${expStr}.${nonce}`);
+  const expected = signPayload(`${tokenScope}.${expStr}.${device}.${nonce}`);
   try {
     return timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
   } catch {
@@ -57,23 +76,43 @@ function parseCookie(req: IncomingMessage, name: string): string | null {
   return match ? decodeURIComponent(match.split("=")[1]?.trim() ?? "") : null;
 }
 
-function setSessionCookie(res: ServerResponse, token: string) {
+function setCookie(res: ServerResponse, name: string, token: string, maxAgeMs: number) {
   const secure = adminCookieShouldBeSecure() ? "; Secure" : "";
-  res.setHeader(
-    "Set-Cookie",
-    `${ADMIN_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}${secure}`
-  );
+  return `${name}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(maxAgeMs / 1000)}${secure}`;
+}
+
+function setSessionCookie(res: ServerResponse, token: string) {
+  res.setHeader("Set-Cookie", setCookie(res, ADMIN_COOKIE, token, SESSION_TTL_MS));
+}
+
+function setRememberCookie(res: ServerResponse, token: string) {
+  const current = res.getHeader("Set-Cookie");
+  const next = setCookie(res, REMEMBER_COOKIE, token, REMEMBER_TTL_MS);
+  res.setHeader("Set-Cookie", Array.isArray(current) ? [...current, next] : current ? [String(current), next] : [next]);
 }
 
 function clearSessionCookie(res: ServerResponse) {
   const secure = adminCookieShouldBeSecure() ? "; Secure" : "";
-  res.setHeader("Set-Cookie", `${ADMIN_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
+  const cookies = [
+    `${ADMIN_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`,
+    `${REMEMBER_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`,
+  ];
+  res.setHeader("Set-Cookie", cookies);
 }
 
 export function isAdminAuthenticated(req: IncomingMessage): boolean {
   const token = parseCookie(req, ADMIN_COOKIE);
   if (!token) return false;
-  return verifySessionToken(token);
+  return verifyToken(token, req, "session");
+}
+
+function tryRestoreRememberedSession(req: IncomingMessage, res: ServerResponse): boolean {
+  const remember = parseCookie(req, REMEMBER_COOKIE);
+  if (!remember || !verifyToken(remember, req, "remember")) return false;
+  const nextSession = createSessionToken(req);
+  if (!nextSession) return false;
+  setSessionCookie(res, nextSession);
+  return true;
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
@@ -86,8 +125,9 @@ export function createAuthHandlers() {
     handleAuthRequest: async (req: IncomingMessage, res: ServerResponse, pathname: string) => {
       if (pathname === "/api/admin/session" && req.method === "GET") {
         const configured = Boolean(getAdminPassword() && getSessionSecret());
+        const authenticated = isAdminAuthenticated(req) || tryRestoreRememberedSession(req, res);
         return sendJson(res, 200, {
-          authenticated: isAdminAuthenticated(req),
+          authenticated,
           configured,
         });
       }
@@ -113,7 +153,7 @@ export function createAuthHandlers() {
           return sendJson(res, 400, { error: "Ungültige Anfrage." });
         }
 
-        let parsed: { password?: string };
+        let parsed: { password?: string; rememberDevice?: boolean };
         try {
           parsed = JSON.parse(body);
         } catch {
@@ -132,11 +172,15 @@ export function createAuthHandlers() {
           return sendJson(res, 401, { error: "Falsches Passwort." });
         }
 
-        const token = createSessionToken();
+        const token = createSessionToken(req);
         if (!token) {
           return sendJson(res, 503, { error: "Session konnte nicht erstellt werden." });
         }
         setSessionCookie(res, token);
+        if (parsed.rememberDevice) {
+          const rememberToken = createRememberToken(req);
+          if (rememberToken) setRememberCookie(res, rememberToken);
+        }
         return sendJson(res, 200, { ok: true });
       }
 
@@ -149,7 +193,7 @@ export function createAuthHandlers() {
     },
 
     requireAdmin(req: IncomingMessage, res: ServerResponse): boolean {
-      if (isAdminAuthenticated(req)) return true;
+      if (isAdminAuthenticated(req) || tryRestoreRememberedSession(req, res)) return true;
       sendJson(res, 401, { error: "Nicht angemeldet." });
       return false;
     },

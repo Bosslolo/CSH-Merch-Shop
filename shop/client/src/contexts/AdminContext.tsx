@@ -7,7 +7,7 @@ interface AdminContextValue {
   loading: boolean;
   authenticated: boolean;
   configured: boolean;
-  login: (password: string) => Promise<string | null>;
+  login: (password: string, rememberDevice?: boolean) => Promise<string | null>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -35,8 +35,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const login = useCallback(async (password: string) => {
-    const result = await adminLogin(password);
+  const login = useCallback(async (password: string, rememberDevice = false) => {
+    const result = await adminLogin(password, rememberDevice);
     if (result.error) return result.error;
     await refresh();
     return null;

@@ -1,45 +1,43 @@
-import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { InventoryFile, PublicStockEntry } from "../shared/shop-types.js";
-import { CATALOG, defaultInventory, getCatalogProduct, stockKey } from "./catalog.js";
-import { withFileLock } from "./file-lock.js";
-import { readJsonFile, writeJsonFile } from "./json-store.js";
+import { defaultInventory, getCatalogCollections, getCatalogProduct, getCatalogProducts, stockKey } from "./catalog.js";
+import { dbLoadInventory, dbSaveInventory, dbWithShopTransaction, ensureShopDb } from "./db.js";
+import { sendJsonCached } from "./http-cache.js";
 
-function inventoryPath(root: string) {
-  return path.join(root, "data", "inventory.json");
-}
-
-/** Shared lock key so order create + stock mutations never interleave across modules. */
+/** @deprecated SQLite transactions replace the file lock; kept for call-site compatibility. */
 export function shopDataLockKey(root: string) {
-  return path.join(root, "data", ".shop-data.lock");
+  return root;
 }
 
 function loadInventoryUnlocked(root: string): InventoryFile {
-  const fallback: InventoryFile = {
-    stock: defaultInventory(),
-    updatedAt: new Date().toISOString(),
-  };
-  const data = readJsonFile(inventoryPath(root), fallback);
+  ensureShopDb(root);
+  const data = dbLoadInventory(root);
+  const stock = { ...data.stock };
   let changed = false;
-  for (const p of CATALOG) {
+  for (const p of getCatalogProducts(root)) {
     for (const size of p.sizes) {
       const key = stockKey(p.slug, size);
-      if (data.stock[key] === undefined) {
-        data.stock[key] = 20;
+      if (stock[key] === undefined) {
+        stock[key] = 20;
         changed = true;
       }
     }
   }
-  if (changed) {
-    data.updatedAt = new Date().toISOString();
-    writeJsonFile(inventoryPath(root), data);
+  if (!Object.keys(stock).length) {
+    Object.assign(stock, defaultInventory(root));
+    changed = true;
   }
-  return data;
+  if (changed) {
+    const next: InventoryFile = { stock, updatedAt: new Date().toISOString() };
+    dbSaveInventory(root, next);
+    return next;
+  }
+  return { stock, updatedAt: data.updatedAt };
 }
 
 function saveInventoryUnlocked(root: string, data: InventoryFile) {
   data.updatedAt = new Date().toISOString();
-  writeJsonFile(inventoryPath(root), data);
+  dbSaveInventory(root, data);
 }
 
 export function getStockQuantity(root: string, slug: string, size: string): number {
@@ -47,14 +45,14 @@ export function getStockQuantity(root: string, slug: string, size: string): numb
   return data.stock[stockKey(slug, size)] ?? 0;
 }
 
-/** Must be called while holding shopDataLockKey(root) when used with concurrent order writes. */
+/** Must run inside dbWithShopTransaction when used with concurrent order writes. */
 export function adjustStockUnlocked(
   root: string,
   adjustments: { slug: string; size: string; delta: number }[]
 ): { ok: true } | { ok: false; error: string } {
   const data = loadInventoryUnlocked(root);
   for (const { slug, size, delta } of adjustments) {
-    const product = getCatalogProduct(slug);
+    const product = getCatalogProduct(root, slug);
     if (!product || !product.sizes.includes(size as (typeof product.sizes)[number])) {
       return { ok: false, error: `Ungültige Variante: ${slug} / ${size}` };
     }
@@ -73,18 +71,18 @@ export async function adjustStock(
   root: string,
   adjustments: { slug: string; size: string; delta: number }[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  return withFileLock(shopDataLockKey(root), () => adjustStockUnlocked(root, adjustments));
+  return dbWithShopTransaction(root, () => adjustStockUnlocked(root, adjustments));
 }
 
 export async function setStockLevels(
   root: string,
   updates: { slug: string; size: string; quantity: number }[]
 ): Promise<{ ok: true; data: InventoryFile } | { ok: false; error: string }> {
-  return withFileLock(shopDataLockKey(root), () => {
+  return dbWithShopTransaction(root, () => {
     const data = loadInventoryUnlocked(root);
     const MAX_STOCK = 500;
     for (const { slug, size, quantity } of updates) {
-      const product = getCatalogProduct(slug);
+      const product = getCatalogProduct(root, slug);
       if (!product || !product.sizes.includes(size as (typeof product.sizes)[number])) {
         return { ok: false, error: `Ungültige Variante: ${slug} / ${size}` };
       }
@@ -104,7 +102,7 @@ export async function setStockLevels(
 export function getPublicStock(root: string): PublicStockEntry[] {
   const data = loadInventoryUnlocked(root);
   const entries: PublicStockEntry[] = [];
-  for (const p of CATALOG) {
+  for (const p of getCatalogProducts(root, { activeOnly: true })) {
     for (const size of p.sizes) {
       entries.push({
         slug: p.slug,
@@ -116,14 +114,26 @@ export function getPublicStock(root: string): PublicStockEntry[] {
   return entries;
 }
 
+export function getInventoryUpdatedAt(root: string): string {
+  return loadInventoryUnlocked(root).updatedAt;
+}
+
 export function getAdminInventory(root: string) {
   const data = loadInventoryUnlocked(root);
+  const products = getCatalogProducts(root);
   return {
     updatedAt: data.updatedAt,
-    products: CATALOG.map((p) => ({
+    products: products.map((p) => ({
       slug: p.slug,
       name: p.name,
       price: p.price,
+      image: p.image,
+      collection: p.collection,
+      collectionLabel:
+        getCatalogCollections(root).find((c) => c.id === p.collection)?.name ||
+        (p.collection === "small" ? "Kids Kollektion" : "Campus Kollektion"),
+      groupKey: p.groupKey,
+      groupLabel: p.groupLabel,
       sizes: p.sizes.map((size) => ({
         size,
         quantity: data.stock[stockKey(p.slug, size)] ?? 0,
@@ -132,18 +142,17 @@ export function getAdminInventory(root: string) {
   };
 }
 
-function sendJson(res: ServerResponse, status: number, body: unknown) {
-  res.writeHead(status, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(body));
-}
-
 export function createInventoryHandlers(projectRoot: string) {
   return {
     handlePublicStockRequest(req: IncomingMessage, res: ServerResponse) {
       if (req.method !== "GET") {
-        return sendJson(res, 405, { error: "Method not allowed" });
+        res.writeHead(405, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Method not allowed" }));
+        return;
       }
-      sendJson(res, 200, { stock: getPublicStock(projectRoot) });
+      const stock = getPublicStock(projectRoot);
+      const updatedAt = getInventoryUpdatedAt(projectRoot);
+      sendJsonCached(req, res, 200, { stock, updatedAt }, updatedAt);
     },
   };
 }

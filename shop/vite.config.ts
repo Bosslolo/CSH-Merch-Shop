@@ -6,12 +6,16 @@ import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { createAdminHandlers } from "./server/admin";
+import { loadCatalog } from "./server/catalog";
+import { ensureShopDb, startOrderArchiveCleanup } from "./server/db";
 import { createHubHandlers } from "./server/hub";
+import { sendJsonCached } from "./server/http-cache";
 import { createInventoryHandlers } from "./server/inventory";
 import { createOrderHandlers, startUnpaidOrderCleanup } from "./server/orders";
 import { createPaymentHandlers } from "./server/payments";
 import { loadMerchEnv } from "./server/payments-config";
 import { handleQrImage } from "./server/qr";
+import { applySalesToCatalogProducts, loadSiteSettings } from "./server/site-settings";
 import { createVoteHandlers } from "./server/votes";
 
 // =============================================================================
@@ -229,6 +233,7 @@ function vitePluginShopApi(): Plugin {
   const shopRoot = import.meta.dirname;
   const repoRoot = path.resolve(shopRoot, "..");
   loadMerchEnv(repoRoot);
+  ensureShopDb(shopRoot);
 
   const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
   const orderHandlers = createOrderHandlers(shopRoot);
@@ -244,6 +249,7 @@ function vitePluginShopApi(): Plugin {
       if (!cleanupStarted) {
         cleanupStarted = true;
         startUnpaidOrderCleanup(() => orderHandlers.expireUnpaidOrders());
+        startOrderArchiveCleanup(() => orderHandlers.archiveOldOrders());
       }
       server.middlewares.use("/__manus__", (_req, res, next) => {
         if (process.env.NODE_ENV === "production") {
@@ -277,6 +283,31 @@ function vitePluginShopApi(): Plugin {
         }
         if (url === "/api/stock") {
           handlePublicStockRequest(req, res);
+          return;
+        }
+        if (url === "/api/catalog") {
+          const data = loadCatalog(shopRoot);
+          const settings = loadSiteSettings(shopRoot);
+          const products = applySalesToCatalogProducts(
+            data.products.filter((product) => product.active !== false),
+            settings.sales
+          );
+          sendJsonCached(
+            req,
+            res,
+            200,
+            {
+              collections: data.collections,
+              products,
+              updatedAt: data.updatedAt,
+            },
+            `${data.updatedAt}|${settings.updatedAt}`
+          );
+          return;
+        }
+        if (url === "/api/site-settings") {
+          const settings = loadSiteSettings(shopRoot);
+          sendJsonCached(req, res, 200, settings, settings.updatedAt, 15);
           return;
         }
         if (url === "/api/orders") {

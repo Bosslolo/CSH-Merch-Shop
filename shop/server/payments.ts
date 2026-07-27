@@ -1,11 +1,9 @@
-import path from "node:path";
 import { timingSafeEqual } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import Stripe from "stripe";
-import type { Order, OrdersFile, PaymentMethod } from "../shared/shop-types.js";
-import { withFileLock } from "./file-lock.js";
-import { shopDataLockKey } from "./inventory.js";
-import { readBody, readJsonFile, writeJsonFile } from "./json-store.js";
+import type { Order, PaymentMethod } from "../shared/shop-types.js";
+import { dbGetOrder, dbUpdateOrder, dbWithShopTransaction, ensureShopDb } from "./db.js";
+import { readBody } from "./json-store.js";
 import {
   assertStripePublicBaseUrl,
   paymentsConfigured,
@@ -13,21 +11,13 @@ import {
   shopPublicBaseUrl,
 } from "./payments-config.js";
 
-function ordersPath(root: string) {
-  return path.join(root, "data", "orders.json");
-}
-
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
 }
 
-function loadOrders(root: string): OrdersFile {
-  return readJsonFile(ordersPath(root), { orders: [] });
-}
-
 function findOrder(projectRoot: string, orderId: string): Order | undefined {
-  return loadOrders(projectRoot).orders.find((o) => o.id === orderId);
+  return dbGetOrder(projectRoot, orderId);
 }
 
 function tokensEqual(a: string, b: string): boolean {
@@ -73,12 +63,11 @@ async function patchOrderPayment(
   orderId: string,
   patch: Partial<Order>
 ): Promise<Order | null> {
-  return withFileLock(shopDataLockKey(projectRoot), () => {
-    const data = loadOrders(projectRoot);
-    const order = data.orders.find((o) => o.id === orderId);
+  return dbWithShopTransaction(projectRoot, () => {
+    const order = dbGetOrder(projectRoot, orderId);
     if (!order) return null;
     Object.assign(order, patch, { updatedAt: new Date().toISOString() });
-    writeJsonFile(ordersPath(projectRoot), data);
+    dbUpdateOrder(projectRoot, order);
     return order;
   });
 }
@@ -121,6 +110,7 @@ async function markStripePaid(
 }
 
 export function createPaymentHandlers(projectRoot: string) {
+  ensureShopDb(projectRoot);
   return {
     handlePaymentsStatus(_req: IncomingMessage, res: ServerResponse) {
       const cfg = paymentsConfigured();
@@ -379,9 +369,8 @@ export function createPaymentHandlers(projectRoot: string) {
         };
       }
 
-      return withFileLock(shopDataLockKey(projectRoot), () => {
-        const data = loadOrders(projectRoot);
-        const order = data.orders.find((o) => o.id === orderId);
+      return dbWithShopTransaction(projectRoot, () => {
+        const order = dbGetOrder(projectRoot, orderId);
         if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
         if (order.status === "cancelled") {
           return { ok: false, error: "Stornierte Bestellung kann nicht als bezahlt markiert werden." };
@@ -395,7 +384,7 @@ export function createPaymentHandlers(projectRoot: string) {
           `admin:${method}:${new Date().toISOString()}`;
         if (order.status === "pending") order.status = "confirmed";
         order.updatedAt = new Date().toISOString();
-        writeJsonFile(ordersPath(projectRoot), data);
+        dbUpdateOrder(projectRoot, order);
         return { ok: true, order };
       });
     },
@@ -403,9 +392,8 @@ export function createPaymentHandlers(projectRoot: string) {
     async resetOrderPayment(
       orderId: string
     ): Promise<{ ok: true; order: Order } | { ok: false; error: string }> {
-      return withFileLock(shopDataLockKey(projectRoot), () => {
-        const data = loadOrders(projectRoot);
-        const order = data.orders.find((o) => o.id === orderId);
+      return dbWithShopTransaction(projectRoot, () => {
+        const order = dbGetOrder(projectRoot, orderId);
         if (!order) return { ok: false, error: "Bestellung nicht gefunden." };
         if (order.paymentStatus === "paid") {
           return { ok: false, error: "Bezahlte Bestellung kann nicht zurückgesetzt werden." };
@@ -418,7 +406,7 @@ export function createPaymentHandlers(projectRoot: string) {
         delete order.paymentReference;
         delete order.stripeSessionId;
         order.updatedAt = new Date().toISOString();
-        writeJsonFile(ordersPath(projectRoot), data);
+        dbUpdateOrder(projectRoot, order);
         return { ok: true, order };
       });
     },
