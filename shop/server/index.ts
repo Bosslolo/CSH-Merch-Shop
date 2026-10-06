@@ -32,6 +32,57 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Canonical host: shop.icicles.online (Cloudflare zone).
+  // Alias shop.cs-bodensee.de is a Cloudpit CNAME — send everyone to icicles once they connect.
+  const CANONICAL_HOST = (
+    process.env.SHOP_PUBLIC_BASE_URL ||
+    process.env.STRIPE_SUCCESS_BASE_URL ||
+    "https://shop.icicles.online"
+  )
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/$/, "")
+    .toLowerCase() || "shop.icicles.online";
+
+  const ALIAS_HOSTS = new Set(
+    (
+      process.env.SHOP_ALIAS_HOSTS ||
+      "shop.cs-bodensee.de,www.shop.cs-bodensee.de"
+    )
+      .split(",")
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean)
+  );
+
+  app.use((req, res, next) => {
+    const rawHost = String(req.headers.host || "")
+      .split(":")[0]
+      .trim()
+      .toLowerCase();
+    const xfHost = String(req.headers["x-forwarded-host"] || "")
+      .split(",")[0]
+      .split(":")[0]
+      .trim()
+      .toLowerCase();
+    const requestHost = ALIAS_HOSTS.has(rawHost)
+      ? rawHost
+      : ALIAS_HOSTS.has(xfHost)
+        ? xfHost
+        : rawHost;
+
+    if (
+      requestHost &&
+      requestHost !== CANONICAL_HOST &&
+      ALIAS_HOSTS.has(requestHost) &&
+      req.path !== "/api/stripe/webhook"
+    ) {
+      const target = `https://${CANONICAL_HOST}${req.originalUrl || "/"}`;
+      res.setHeader("Cache-Control", "public, max-age=300");
+      return res.redirect(301, target);
+    }
+    return next();
+  });
+
   const { handleVoteRequest } = createVoteHandlers(shopRoot);
   const { handlePublicStockRequest } = createInventoryHandlers(shopRoot);
   const orderHandlers = createOrderHandlers(shopRoot);

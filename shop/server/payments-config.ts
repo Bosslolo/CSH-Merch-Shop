@@ -5,24 +5,30 @@ import os from "node:os";
 const SHARED_DEFAULT = path.join("E:", "Schülerfirma", "shared", "csh-payments.env");
 
 function parseEnvFile(filePath: string): Record<string, string> {
-  if (!fs.existsSync(filePath)) return {};
-  const out: Record<string, string> = {};
-  for (const raw of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {
-    let line = raw.trim();
-    if (!line || line.startsWith("#") || !line.includes("=")) continue;
-    if (line.toLowerCase().startsWith("export ")) line = line.slice(7).trim();
-    const idx = line.indexOf("=");
-    const key = line.slice(0, idx).trim();
-    let value = line.slice(idx + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
+  try {
+    if (!fs.existsSync(filePath)) return {};
+    const out: Record<string, string> = {};
+    for (const raw of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {
+      let line = raw.trim();
+      if (!line || line.startsWith("#") || !line.includes("=")) continue;
+      if (line.toLowerCase().startsWith("export ")) line = line.slice(7).trim();
+      const idx = line.indexOf("=");
+      const key = line.slice(0, idx).trim();
+      let value = line.slice(idx + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      if (key) out[key] = value;
     }
-    if (key) out[key] = value;
+    return out;
+  } catch (err) {
+    // E: (and other flaky volumes) can return exists=true then hang/timeout on read.
+    console.warn(`[payments-config] skip unreadable env file ${filePath}:`, (err as Error).message);
+    return {};
   }
-  return out;
 }
 
 /**

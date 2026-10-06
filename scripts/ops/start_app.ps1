@@ -45,6 +45,8 @@ Import-EnvFile $sharedPayments $paymentKeys
 if (-not (Test-Path -LiteralPath $sharedPayments)) {
     Write-Host "WARN: shared payments vault not found at $sharedPayments" -ForegroundColor Yellow
 }
+# Fallback when E: is unavailable (school NTFS timeouts)
+Import-EnvFile (Join-Path $ProjectRoot "config\csh-payments.local.env") $paymentKeys
 $envFile = Join-Path $ProjectRoot "config\production.env"
 $allowedKeys = @(
     "ADMIN_PASSWORD", "ADMIN_SESSION_SECRET", "ADMIN_COOKIE_SECURE",
@@ -58,7 +60,7 @@ $allowedKeys = @(
     "PAYPAL_ME_HANDLE",
     "STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "STRIPE_WEBHOOK_SECRET",
     "STRIPE_SUCCESS_BASE_URL", "STRIPE_CANCEL_BASE_URL", "STRIPE_CHECKOUT_COMPANY_NAME",
-    "SHOP_PUBLIC_BASE_URL"
+    "SHOP_PUBLIC_BASE_URL", "SHOP_ALIAS_HOSTS"
 )
 Import-EnvFile $envFile $allowedKeys
 
@@ -128,8 +130,8 @@ Start-Sleep -Seconds 3
 
 Write-Host ""
 Write-Host "Shop:  http://localhost:$port" -ForegroundColor White
-Write-Host "Public: https://shop.cs-bodensee.de" -ForegroundColor White
-Write-Host "Alt:    https://shop.icicles.online" -ForegroundColor DarkGray
+Write-Host "Public: https://shop.icicles.online" -ForegroundColor White
+Write-Host "Alias:  https://shop.cs-bodensee.de (CNAME → icicles)" -ForegroundColor DarkGray
 Write-Host "Admin: http://localhost:$port/verwaltung" -ForegroundColor White
 Write-Host "Logs:  $logOut" -ForegroundColor DarkGray
 Write-Host "Stop:  .\scripts\ops\stop_app.ps1" -ForegroundColor Yellow

@@ -10,3 +10,12 @@ config/production.env
 instance/
 # raw photoshoot archive (~6 GB) — too large for GitHub, keep locally
 Fotoshooting Schülerfirma/
+
+# local payments secrets fallback (never commit)
+config/csh-payments.local.env
+config/*.local.env
+
+
+# local restore scratch
+restored-backup/
+
