@@ -258,7 +258,7 @@ export default function CheckoutPage() {
         <div className="csh-checkout__grid">
           <section>
             <p className="csh-label">Kasse</p>
-            <h1 className="csh-display csh-display--sm">Bestellung abschliessen</h1>
+            <h1 className="csh-display csh-display--sm">Bestellung abschließen</h1>
             {items.length === 0 ? (
               <p className="csh-body">Dein Warenkorb ist leer.</p>
             ) : (

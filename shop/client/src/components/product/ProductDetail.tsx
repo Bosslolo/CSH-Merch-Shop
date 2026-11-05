@@ -135,8 +135,6 @@ export default function ProductDetail({ product, products }: Props) {
 
   return (
     <article className="product-detail">
-      <div className="product-page__accent" aria-hidden="true" />
-
       <div className="product-page__hero-row">
         <motion.div
           className="product-page__visual"
@@ -145,22 +143,24 @@ export default function ProductDetail({ product, products }: Props) {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
           <ProductHeroVisual product={product} image={activeImage} />
-          <div className="product-page__gallery product-page__gallery--filmstrip" role="tablist" aria-label="Produktbilder">
-            {gallery.map((src) => (
-              <motion.button
-                key={src}
-                type="button"
-                role="tab"
-                aria-selected={activeImage === src}
-                className={`product-page__thumb${activeImage === src ? " is-active" : ""}`}
-                onClick={() => setActiveImage(src)}
-                whileTap={reduced ? undefined : { scale: 0.96 }}
-                layout={false}
-              >
-                <img src={src} alt="" />
-              </motion.button>
-            ))}
-          </div>
+          {gallery.length > 1 && (
+            <div className="product-page__gallery product-page__gallery--filmstrip" role="tablist" aria-label="Produktbilder">
+              {gallery.map((src) => (
+                <motion.button
+                  key={src}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeImage === src}
+                  className={`product-page__thumb${activeImage === src ? " is-active" : ""}`}
+                  onClick={() => setActiveImage(src)}
+                  whileTap={reduced ? undefined : { scale: 0.96 }}
+                  layout={false}
+                >
+                  <img src={src} alt="" />
+                </motion.button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         <motion.div
@@ -169,7 +169,7 @@ export default function ProductDetail({ product, products }: Props) {
           initial="hidden"
           animate="visible"
         >
-          <div className="product-page__buy-card csh-panel">
+          <div className="product-page__buy-card">
             <motion.p className="csh-label" variants={fadeUp} transition={transition}>
               {product.subtitle}
             </motion.p>
@@ -203,9 +203,11 @@ export default function ProductDetail({ product, products }: Props) {
               )}
             </motion.div>
 
-            <motion.p className="csh-body product-page__unity product-page__unity--clamp" variants={fadeUp} transition={transition}>
-              {product.unityLine}
-            </motion.p>
+            {product.unityLine && (
+              <motion.p className="csh-body product-page__unity product-page__unity--clamp" variants={fadeUp} transition={transition}>
+                {product.unityLine}
+              </motion.p>
+            )}
 
             <motion.div className="product-page__size-block" variants={fadeUp} transition={transition}>
               <p className="csh-label">Größe</p>
@@ -263,41 +265,43 @@ export default function ProductDetail({ product, products }: Props) {
         </motion.div>
       </div>
 
-      <motion.section
-        className="product-page__related"
-        initial={reduced ? false : { opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="csh-collection__header">
-          <h2 className="csh-display csh-display--sm">Passt dazu</h2>
-          <Link href={collectionLink} className="csh-link csh-link--ghost" onClick={() => scrollToTop()}>
-            Kollektion
-          </Link>
-        </div>
-        <div className="csh-collection__grid product-page__related-grid">
-          {others.map((p, index) => (
-            <motion.div
-              key={p.slug}
-              initial={reduced ? false : { opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.06, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Link href={`/produkt/${p.slug}`} className="csh-product-card" onClick={() => scrollToTop()}>
-                <div className="csh-product-card__media">
-                  <img src={p.flatLay} alt={p.name} loading="lazy" />
-                </div>
-                <div className="csh-product-card__info">
-                  <p className="csh-product-card__name">{p.name}</p>
-                  <p className="csh-product-card__price">{p.price} €</p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+      {others.length > 0 && (
+        <motion.section
+          className="product-page__related"
+          initial={reduced ? false : { opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="csh-collection__header">
+            <h2 className="csh-display csh-display--sm">Passt dazu</h2>
+            <Link href={collectionLink} className="csh-link csh-link--ghost" onClick={() => scrollToTop()}>
+              Kollektion
+            </Link>
+          </div>
+          <div className="csh-collection__grid product-page__related-grid">
+            {others.map((p, index) => (
+              <motion.div
+                key={p.slug}
+                initial={reduced ? false : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.06, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Link href={`/produkt/${p.slug}`} className="csh-product-card" onClick={() => scrollToTop()}>
+                  <div className="csh-product-card__media">
+                    <img src={p.image || p.flatLay} alt={p.name} loading="lazy" />
+                  </div>
+                  <div className="csh-product-card__info">
+                    <p className="csh-product-card__name">{p.name}</p>
+                    <p className="csh-product-card__price">{p.price} €</p>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       <ProductMobileBuyBar
         visible={showMobileBar}

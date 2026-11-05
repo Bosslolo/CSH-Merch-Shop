@@ -30,7 +30,16 @@ export default function Home() {
           <img src={catalog.hero.lifestyleCrossgen} alt="CSH — von KiTa bis Oberstufe" />
           <div className="csh-editorial__text">
             <p className="csh-label">Gemeinschaft</p>
-            <h2 className="csh-serif">Von KiTa bis Oberstufe.</h2>
+            <h2 className="csh-serif">
+              <a
+                href="https://www.cs-bodensee.de"
+                target="_blank"
+                rel="noreferrer"
+                className="csh-editorial__title-link"
+              >
+                Von KiTa bis Oberstufe.
+              </a>
+            </h2>
             <p className="csh-body">Ein Shop für alle an der Christlichen Schule im Hegau.</p>
           </div>
         </motion.section>

@@ -51,7 +51,7 @@ function Panel({
 
 export default function ProductInfoPanels({ product, compact }: Props) {
   const [materialOpen, setMaterialOpen] = useState(false);
-  const [fitOpen, setFitOpen] = useState(!compact);
+  const [fitOpen, setFitOpen] = useState(false);
 
   return (
     <div className="product-page__info-stack">

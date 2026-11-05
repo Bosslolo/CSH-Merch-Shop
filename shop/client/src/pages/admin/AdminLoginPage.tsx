@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setRememberDevice(e.target.checked)}
               disabled={!configured || submitting}
             />
-            <span>Dieses Geraet 24 Stunden merken</span>
+            <span>Dieses Gerät 24 Stunden merken</span>
           </label>
           {error && <p className="admin-error">{error}</p>}
           <button type="submit" className="admin-btn" disabled={!configured || submitting}>

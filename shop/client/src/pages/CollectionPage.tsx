@@ -25,8 +25,14 @@ export default function CollectionPage() {
   const { collections, products, loading } = useCatalog();
   const collection = collections.find((item) => item.id === collectionId);
   const list = products.filter((product) => product.collection === collectionId);
-  const groups = Array.from(new Set(list.map((product) => product.groupLabel)));
   const isSmallEmpty = collectionId === "small" && list.length === 0;
+  const title =
+    collection?.name ?? (collectionId === "small" ? "Kids Kollektion" : "Campus Kollektion");
+  const lead =
+    collection?.lead ??
+    (collectionId === "small"
+      ? "Passende Schnitte für KiTa und Kinder – dieselbe Schulidentität, kleinere Größen."
+      : "Hoodies und Shirts in Erwachsenengrößen für die ganze Schulgemeinschaft.");
 
   return (
     <div className="csh-site csh-site--warm">
@@ -40,34 +46,22 @@ export default function CollectionPage() {
           transition={transition}
         >
           <p className="csh-label">{isSmallEmpty ? "In Vorbereitung" : "Kollektion"}</p>
-          <h1 className="csh-display csh-display--sm">
-            {collection?.name ?? (collectionId === "small" ? "Kids Kollektion" : "Campus Kollektion")}
-          </h1>
-          <p className="csh-body csh-collection-page__lead">
-            {collection?.lead ??
-              (collectionId === "small"
-                ? "Passende Schnitte für KiTa und Kinder – dieselbe Schulidentität, kleinere Größen."
-                : "Hoodies und Shirts in Erwachsenengrößen für die ganze Schulgemeinschaft.")}
-          </p>
-          <div className="csh-collection-page__preview">
-            <div className="csh-collection-page__preview-card">
-              <span className="csh-collection-page__preview-kicker">
-                {list.length ? `${list.length} Artikel` : collection?.badge || "Bald"}
-              </span>
-              <strong>{groups[0] ?? (collectionId === "small" ? "KiTa & Kinder" : "Produkte")}</strong>
-              <span>{collection?.cardNote ?? (collectionId === "small" ? "Kleinere Größen" : "Für den Schulalltag.")}</span>
-            </div>
-            <div className="csh-collection-page__preview-card">
-              <span className="csh-collection-page__preview-kicker">{groups.length || 1} Gruppen</span>
-              <strong>{groups.slice(0, 2).join(" & ") || "Kollektion"}</strong>
-              <span>{loading ? "Lädt…" : "Live aus dem Katalog."}</span>
-            </div>
+          <div className="csh-collection-page__title-row">
+            <h1 className="csh-display csh-display--sm">{title}</h1>
+            {list.length > 0 && (
+              <span className="csh-collection-page__count">{list.length} Artikel</span>
+            )}
           </div>
+          <p className="csh-body csh-collection-page__lead">{lead}</p>
         </motion.div>
 
-        {list.length > 0 ? (
+        {loading ? (
+          <section className="csh-stock csh-stock--collection" aria-busy="true">
+            <p className="csh-body">Kollektion wird geladen…</p>
+          </section>
+        ) : list.length > 0 ? (
           <section className="csh-stock csh-stock--collection">
-            <CollectionGrid products={list} title={collection?.name ?? "Kollektion"} />
+            <CollectionGrid products={list} />
           </section>
         ) : (
           <motion.section

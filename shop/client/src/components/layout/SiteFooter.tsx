@@ -14,7 +14,7 @@ export default function SiteFooter() {
           <ul className="csh-footer__links">
             <li>
               <Link href="/kollektion/gross" onClick={() => scrollToTop()}>
-                Grosse Kollektion
+                Große Kollektion
               </Link>
             </li>
             <li>

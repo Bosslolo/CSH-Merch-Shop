@@ -117,6 +117,7 @@ client/public/images/uploads/*
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
 
-# Manus version file (auto-generated, not part of source)
+# Manus debug artifacts (dev-only)
+.manus-logs/
 client/public/__manus__/version.json
 .project-config.json

@@ -117,14 +117,14 @@ export default function AdminLayout({
       </div>
 
       {navOpen && (
-        <button type="button" className="admin-nav-backdrop" aria-label="Menü schliessen" onClick={closeNav} />
+        <button type="button" className="admin-nav-backdrop" aria-label="Menü schließen" onClick={closeNav} />
       )}
 
       <aside className="admin-sidebar admin-sidebar--desktop">{nav}</aside>
       <aside className={`admin-sidebar admin-sidebar--drawer${navOpen ? " is-open" : ""}`} aria-hidden={!navOpen}>
         <div className="admin-drawer__head">
           <button type="button" className="admin-mobile-bar__toggle" onClick={closeNav}>
-            Schliessen
+            Schließen
           </button>
         </div>
         {nav}

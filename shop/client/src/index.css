@@ -66,14 +66,14 @@
 
 :root {
   --radius: 0.25rem;
-  --csh-sky: #e4ecf4;
-  --csh-sky-deep: #c5d3e4;
-  --csh-panel: rgba(252, 252, 250, 0.94);
-  --csh-panel-solid: #fafaf8;
-  --csh-navy: #0f1f3d;
-  --csh-gold: #c9a84c;
-  --csh-warm: #f5f2ed;
-  --csh-border: rgba(15, 31, 61, 0.1);
+  --csh-sky: #eef2f6;
+  --csh-sky-deep: #dde5ee;
+  --csh-panel: rgba(255, 253, 250, 0.88);
+  --csh-panel-solid: #fffcf8;
+  --csh-navy: #15233f;
+  --csh-gold: #b89a5a;
+  --csh-warm: #f7f4ef;
+  --csh-border: rgba(21, 35, 63, 0.08);
   --balmoral-sky: var(--csh-sky);
   --balmoral-sky-deep: var(--csh-sky-deep);
   --balmoral-panel: var(--csh-panel-solid);

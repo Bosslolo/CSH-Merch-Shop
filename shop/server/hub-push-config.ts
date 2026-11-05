@@ -4,7 +4,7 @@
  *
  * HUB_PUSH_MODE:
  *   - local      → Mac/dev hub on school LAN
- *   - production → hub.icicles.online
+ *   - production → hub.glaciers.online
  *   - both       → local + production
  *
  * Override with HUB_PUSH_URL (single) or HUB_PUSH_URLS (comma-separated).
@@ -27,7 +27,7 @@ export function resolveHubPushUrls(appSlug = "csh-merch"): string[] {
   const localHost = (process.env.HUB_PUSH_LOCAL_HOST || "YOUR_MAC_LAN_IP").trim();
   const localPort = (process.env.HUB_PUSH_LOCAL_PORT || "5180").trim();
   const localUrl = `http://${localHost}:${localPort}/api/ingest/${appSlug}`;
-  const prodUrl = `https://hub.icicles.online/api/ingest/${appSlug}`;
+  const prodUrl = `https://hub.glaciers.online/api/ingest/${appSlug}`;
 
   if (mode === "production") return [prodUrl];
   if (mode === "both") return [localUrl, prodUrl];

@@ -24,9 +24,9 @@ export function ProductHeroVisual({ product, image }: Props) {
             key={src}
             src={src}
             alt={product.name}
-            initial={reduced ? false : { opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={reduced ? undefined : { opacity: 0, scale: 1.01 }}
+            initial={reduced ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduced ? undefined : { opacity: 0 }}
             transition={{ duration: 0.45, ease: EASE }}
           />
         </AnimatePresence>

@@ -25,7 +25,7 @@ export default function CollectionEntryCards() {
     <section id="kollektion" className="csh-collection-entry">
       <div className="csh-collection-entry__header">
         <p className="csh-label">Kollektionen</p>
-        <h2 className="csh-serif csh-collection-entry__title">Zwei Welten. Ein Schulgeist.</h2>
+        <h2 className="csh-serif csh-collection-entry__title">Ein Schulgeist.</h2>
       </div>
       <div className="csh-collection-entry__grid">
         {ordered.map((collection, index) => {

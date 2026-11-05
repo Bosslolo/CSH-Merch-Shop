@@ -10,7 +10,7 @@ import { scrollToTop } from "@/lib/scroll";
 import { catalog } from "@/assets/images";
 
 const ROUTE_LINKS = [
-  { href: "/kollektion/gross", label: "Grosse Kollektion" },
+  { href: "/kollektion/gross", label: "Große Kollektion" },
   { href: "/kollektion/klein", label: "Kleine Kollektion" },
 ] as const;
 
@@ -82,7 +82,7 @@ export default function SiteHeader() {
             type="button"
             className="csh-header__logo-link"
             onClick={handleLogoClick}
-            aria-label={menuOpen ? "Menü schliessen" : "Menü öffnen"}
+            aria-label={menuOpen ? "Menü schließen" : "Menü öffnen"}
             aria-expanded={menuOpen}
           >
             <img
@@ -126,7 +126,7 @@ export default function SiteHeader() {
                 e.stopPropagation();
                 closeMenu();
               }}
-              aria-label="Schliessen"
+              aria-label="Schließen"
               variants={fadeUp}
               initial="hidden"
               animate="visible"

@@ -97,6 +97,6 @@ Copy values from Kaffeeliste’s `production.env`. Leave blanks in any **committ
 
 - Cart + `/api/orders` already create orders without charging.
 - Checkout UI should offer PayPal **and** Stripe once this wiring is done.
-- Hub push (optional): same `HUB_API_KEY` as other school apps → `https://hub.icicles.online/api/ingest/csh-merch`.
+- Hub push (optional): same `HUB_API_KEY` as other school apps → `https://hub.glaciers.online/api/ingest/csh-merch`.
 
 When implementing, prefer adapting Kaffeeliste’s PayPal/Stripe helpers over inventing a new payment stack.

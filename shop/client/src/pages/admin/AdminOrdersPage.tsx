@@ -435,7 +435,7 @@ export default function AdminOrdersPage() {
                         className="admin-btn admin-btn--secondary admin-btn--sm"
                         onClick={() => setExpanded(isOpen ? null : order.id)}
                       >
-                        {isOpen ? "Details schliessen" : "Details"}
+                        {isOpen ? "Details schließen" : "Details"}
                       </button>
 
                       {isOpen && (

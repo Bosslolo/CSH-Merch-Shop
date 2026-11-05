@@ -1,15 +1,14 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { catalog } from "@/assets/images";
 import { useIntro } from "@/contexts/IntroContext";
-import { useNav } from "@/contexts/NavContext";
 import { scrollToTop } from "@/lib/scroll";
 
 export default function LogoSplash() {
   const { showSplash, introComplete, headerLogoRef, completeIntro } = useIntro();
-  const { openMenu } = useNav();
   const [target, setTarget] = useState<{ x: number; y: number; scale: number } | null>(null);
   const [animating, setAnimating] = useState(false);
+  const animatingRef = useRef(false);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -19,6 +18,13 @@ export default function LogoSplash() {
   const springScale = useSpring(scale, { stiffness: 120, damping: 22 });
 
   const splashActive = showSplash && !introComplete;
+
+  const dismiss = useCallback(() => {
+    if (animatingRef.current) return;
+    animatingRef.current = true;
+    scrollToTop();
+    setAnimating(true);
+  }, []);
 
   useLayoutEffect(() => {
     if (!animating || !headerLogoRef.current) return;
@@ -49,6 +55,7 @@ export default function LogoSplash() {
     const replayed = showSplash && !wasShowing.current;
     wasShowing.current = showSplash;
     if (!replayed || introComplete) return;
+    animatingRef.current = false;
     setAnimating(false);
     setTarget(null);
     x.set(0);
@@ -72,12 +79,6 @@ export default function LogoSplash() {
   useEffect(() => {
     if (!splashActive || animating) return;
 
-    const dismiss = () => {
-      if (animating) return;
-      scrollToTop();
-      setAnimating(true);
-    };
-
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (Math.abs(e.deltaY) > 8) dismiss();
@@ -93,15 +94,24 @@ export default function LogoSplash() {
       if (Math.abs(dy) > 30) dismiss();
     };
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
+        e.preventDefault();
+        dismiss();
+      }
+    };
+
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKeyDown);
     };
-  }, [splashActive, animating]);
+  }, [splashActive, animating, dismiss]);
 
   if (!showSplash) return null;
 
@@ -117,8 +127,8 @@ export default function LogoSplash() {
       <motion.button
         type="button"
         className="csh-splash__logo-btn"
-        onClick={openMenu}
-        aria-label="Menü öffnen"
+        onClick={dismiss}
+        aria-label="Shop öffnen"
         style={{
           x: animating ? springX : 0,
           y: animating ? springY : 0,
@@ -128,7 +138,7 @@ export default function LogoSplash() {
         <img src={catalog.brand.logoWhite} alt="CSH" className="csh-splash__logo" draggable={false} />
       </motion.button>
       {!animating && (
-        <p className="csh-splash__hint">Scrollen zum Entdecken</p>
+        <p className="csh-splash__hint">Tippen oder scrollen zum Entdecken</p>
       )}
     </motion.div>
   );
