@@ -5,7 +5,7 @@
 **Scope:** `shop/server/*`, `shop/client/src` (checkout, cart, admin, vote), `shop/shared`, env/config, Vite API plugins  
 **Goal:** List what a normal user, clumsy admin, or attacker can do to break money, stock, data, or trust — with evidence in code.
 
-**Admin password (local `shop/.env`):** updated to `[REDACTED]` (not committed; `.env` is gitignored).
+**Admin password:** store only in local `shop/.env` (gitignored). Never paste real passwords into docs or commits.
 
 ---
 
@@ -304,7 +304,7 @@
 
 ### I1 — Weak placeholder secrets if left in place
 
-- Local `.env` previously had `ADMIN_PASSWORD=change-me-to-a-strong-password` (now `[REDACTED]` locally).
+- Local `.env` must use a strong unique `ADMIN_PASSWORD` (never commit it).
 - `HUB_API_KEY=generate-a-long-random-string` still placeholder unless overridden by shared vault.
 - **Never commit** `shop/.env` or `config/production.env`.
 
